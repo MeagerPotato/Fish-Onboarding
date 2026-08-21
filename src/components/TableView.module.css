@@ -30,10 +30,10 @@
  * Team hue rides on the token border only, where the floor is 3:1 — never on
  * text, which would fall under 4.5:1 once the opacity step is applied.
  *
- * Geometry. 180px of the 200px table zone (20px is the log ticker). Six tokens
- * of 56px on a 40%-wide, 44px-tall ring: the learner is pinned at 6 o'clock and
- * seats proceed clockwise. Positions never reflow, including when a seat goes
- * out — the ring is the learner's spatial anchor.
+ * Geometry. Up to 180px of the 200px table zone; the log ticker takes the rest.
+ * Six 56px tokens on a ring of 40% × 21%, the learner pinned at 6 o'clock and
+ * the others clockwise from there. Positions never reflow, including when a seat
+ * goes out — the ring is the learner's spatial anchor.
  */
 
 /* AppShell splits the zone between the ring and the log ticker, so the ring
@@ -54,7 +54,14 @@
  */
 .seats {
   --rx: 40%;
-  --ry: 21%;
+  /*
+   * The vertical radius has to clear the tokens, not just look proportional. At a flat 21%
+   * the ring assumed a >=150px band; once the zone tightened to 164px (leaving ~130px here)
+   * 21% resolved to 27px, and opposite seats — 54px apart with 56px tokens — measurably
+   * overlapped. The floor ties the radius to the token instead: half a token plus 4px of
+   * clearance, so the ring cannot collapse into itself whatever height it is given.
+   */
+  --ry: max(21%, calc(var(--seat) / 2 + 4px));
   --seat: calc(var(--dg-node-min) + var(--dg-u3));
 
   position: relative;

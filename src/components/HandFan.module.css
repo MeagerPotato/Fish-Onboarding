@@ -15,7 +15,7 @@
  * 9 cards in as many as 5 half-suits at 320px, with ranks readable at arm's
  * length (docs/MOBILE_SPEC.md §4.5, §7.1).
  *
- * How it resolves. Vertically: 8+8 padding, a name band that wraps to two or
+ * How it resolves. Vertically: 4+4 padding, a name band that wraps to two or
  * three lines, a 4px gap, then the card row — 90px used of 132 at the 320px
  * floor, so nothing is ever clipped even when "Eights & Jokers" takes three
  * lines. Horizontally: card width is one custom property that steps with the

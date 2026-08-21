@@ -177,6 +177,27 @@ ul {
   --dg-content-max: 1120px;
 }
 
+/*
+ * Phone zone rebalance.
+ *
+ * The spec'd budget (table 200 + hand 132) was written before the score rail was honest about
+ * its height. With the header no longer clipping its nine chips, a 650px phone had 168px left
+ * for the teaching copy that needs ~256 — so a learner would have scrolled on all 19 steps.
+ *
+ * These are the measured slacks, not guesses. The hand renders at 93.8px inside its 132px zone
+ * at 375px (34px unused), and the nav's controls are 44px inside 64. Reclaiming that slack, plus
+ * trimming the table band, moves ~68px from chrome to content. Values stay constant across
+ * steps, which is what the fixed-zone rule actually protects: the table must not jump between
+ * steps, and it does not.
+ */
+@media (width < 600px) {
+  :root {
+    --dg-zone-table: 164px;
+    --dg-zone-hand: 104px;
+    --dg-zone-nav: 56px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --dg-paper: #14130e;

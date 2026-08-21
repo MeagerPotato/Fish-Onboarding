@@ -24,7 +24,7 @@
   flex-direction: column;
   gap: var(--dg-u1);
   min-block-size: 0;
-  padding-block: var(--dg-u3) var(--dg-u4);
+  padding-block: var(--dg-u1);
 }
 
 /*

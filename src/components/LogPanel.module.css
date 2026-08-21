@@ -41,7 +41,15 @@
   gap: var(--dg-u1);
   flex: 1 1 auto;
   min-block-size: 0;
-  max-block-size: min(24svh, 7rem);
+  /*
+   * The log shares the table band with the seat ring, and the ring loses. At 24svh the log
+   * took 112px of a 164px band, leaving 52px for six 56px seat tokens — three pairs measurably
+   * overlapped. Capping it at 4rem gives the ring the room to stay a ring. One entry stays
+   * visible and the rest scroll, which is enough to check a fact mid-step; the claim
+   * checkpoints, where the log is genuinely load-bearing, get their own 90px strip with the
+   * seats hidden entirely (see AppShell's claim mode).
+   */
+  max-block-size: min(14svh, 4rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;

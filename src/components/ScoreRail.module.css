@@ -98,7 +98,7 @@
 .chips {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
-  grid-auto-rows: minmax(var(--dg-u6), auto);
+  grid-auto-rows: var(--dg-u4);
   gap: 3px;
   inline-size: 100%;
 }
@@ -264,3 +264,49 @@
  * slice through the middle of it. The fix is one line there — a `min-content`/`auto`
  * header track, or a taller `--dg-zone-header` — not a smaller diagram here.
  */
+
+/* ------------------------------------------- the phone progress strip --- */
+
+/*
+ * On a phone the nine become an unlabelled strip: nine 16px cells in one row, carrying state
+ * through exactly the border-style and fill the labelled chips use.
+ *
+ * The written label is what costs the height, and this was measured rather than guessed. The
+ * 3x3 grid needs 146px of header. Nine labelled chips across wrapped every name and came to
+ * 106px. Five across over two rows came to 141px. All three are unaffordable on a 650px
+ * screen whose teaching copy was already 95px short of fitting.
+ *
+ * Nothing is lost to assistive tech: every cell keeps its .srOnly sentence ("Low clubs: won
+ * by Blue"). The full labelled 3x3 returns at 960px and on the printable cheat sheet, which
+ * is where DIAGRAM_SYSTEM D1's "the grid is the argument" actually has room to land.
+ *
+ * This block sits at the end of the file on purpose — the base .chip rule below it in source
+ * order would otherwise win the cascade at equal specificity.
+ */
+@media (width < 960px) {
+  .chipLabel {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .chip {
+    min-block-size: var(--dg-u4);
+    padding: 0;
+    gap: 0;
+  }
+
+  /* The badge is the only mark left, so it fills the cell rather than sitting inside it. */
+  .chip[data-state='team0']::before,
+  .chip[data-state='team1']::before {
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+    font-size: 11px;
+  }
+}

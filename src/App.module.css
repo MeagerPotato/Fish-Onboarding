@@ -23,7 +23,7 @@
   /* Measure, not a width: 46–52ch is the readable band (DESIGN_INSPIRATION §11.8). */
   max-inline-size: 52ch;
   margin-inline: auto;
-  padding-block: var(--dg-u4) var(--dg-u5);
+  padding-block: var(--dg-u2);
 }
 
 /* Grid items default to a content-based minimum; a wide checkpoint row would overflow. */
