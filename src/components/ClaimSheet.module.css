@@ -47,6 +47,38 @@
   gap: var(--dg-node-gap);
 }
 
+/*
+ * Desktop: six rows in two columns of three.
+ *
+ * The rule that governs this sheet is "all six rows legible AT ONCE" (§5.2) — a claim is a
+ * simultaneous deduction. One column of six is 316px of rows; add the brief, the prompt, the
+ * count and the button and the sheet wants 518px. The two-column shell only gives the
+ * annotation 584px at 1280x800 and 552px at 1024x768 once the score rail's three chip rows
+ * are honest about their height, so the last two rows, the count and the whole submit button
+ * fell below the scrollport fold — measured 157px over at 1280x800 and 181px over at
+ * 1024x768. Rows reachable only by scrolling break the exact reasoning the checkpoint exists
+ * to teach (QA_DESKTOP criterion 6).
+ *
+ * Two columns halve the rows' height to 154px without shrinking a single touch target: the
+ * annotation column is 496px at the 1024 floor, so each row still gets 212px — a 44px card,
+ * an 8px gap, then three 53px segments, all clear of the 44px floor. Order still reads
+ * left-to-right, top-to-bottom: 2S 3S / 4S 5S / 6S 7S.
+ *
+ * The sheet's own rhythm tightens with it. This is the one place in the system where spacing
+ * is load-bearing rather than decorative — a gap that pushes the button off screen is worse
+ * than a gap that is 4px tight.
+ */
+@media (width >= 60rem) {
+  .rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sheet {
+    gap: var(--dg-u2);
+    padding-block: var(--dg-u2);
+  }
+}
+
 .row {
   display: grid;
   grid-template-columns: minmax(var(--dg-node-min), auto) minmax(0, 1fr);

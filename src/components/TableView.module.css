@@ -67,10 +67,27 @@
   position: relative;
   flex: 1 1 auto;
   inline-size: 100%;
-  min-block-size: 0;
+  /*
+   * The floor the ring cannot go below, stated where the geometry lives. Two tokens plus a
+   * unit is 2·(--seat) + 16px = 128px, which is exactly 2·ry (the floored radius) + one token
+   * + the 16px the active seat's caret needs above it. AppShell's `.table` sizes the ring
+   * track from this and hands the log the rest; without it the log's own max-block-size won
+   * the split and clipped the top three seats out of the zone.
+   */
+  min-block-size: calc(var(--seat) * 2 + var(--dg-u4));
   max-inline-size: 30rem;
   max-block-size: calc(var(--dg-zone-table) - var(--dg-u5));
   margin-inline: auto;
+}
+
+/*
+ * Desktop has room for the full 180px band the zone budgets, so the ring takes it rather than
+ * sitting at its phone floor inside a 420px zone with a 240px log beside it.
+ */
+@media (width >= 60rem) {
+  .seats {
+    min-block-size: calc(var(--dg-zone-table) - var(--dg-u5));
+  }
 }
 
 /* The table itself: the one decorative ornament in the system. Textless, so it

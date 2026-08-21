@@ -25,7 +25,7 @@ Never abbreviate "half-suit" to "HS", "h-suit", or similar in user-facing copy, 
 - **9 half-suits of 6 cards** (`LOW-C`…`HIGH-S`, plus `EIGHTS`). Per suit LOW = 2–7 and HIGH = 9–A. The 9th half-suit is the four 8s plus both jokers.
 - 6 players, 2 teams of 3, seated alternating (seats 0/2/4 vs 1/3/5), 9 cards each.
 - A claim assigns each of a half-suit's 6 cards to a specific seat **on the claimer's own team** — **3 possible holders: the learner plus two teammates** (engine guard: `ASSIGN_OPPONENT`). Every count in §5 derives from that 6×3 shape.
-- **A claim has three outcomes, not two** (`RULES.md` rows 13–15): your team scores; the *opposing* team scores because an opponent held at least one of the six; or the half-suit is **void** and nobody scores. §5.5 specifies the UI for all three.
+- **A claim has exactly two outcomes** (`RULES.md` rows 13–15, confirmed 2026-08-21): your team is awarded the half-suit, or the *opposing* team is. Wrong for any reason — an opponent held one of the six, or a card was placed with the wrong teammate — hands it over. There is no void. *(This bullet originally specified three outcomes including a void; the rule changed after this document was written.)*
 - **Players go out.** A seat that reaches 0 cards drops out and can neither ask nor be asked (`RULES.md` row 19). Seat tokens therefore need an "out" state (§4.4).
 - **A learner may claim a half-suit while holding none of its cards** (`RULES.md` row 16). The claim UI must not assume the six cards come from the hand (§5.5).
 
@@ -424,7 +424,7 @@ Every segment clears 44px width and 44px height at every supported size. This is
 2. Live assignment counter, "N of 6 assigned", in a polite live region.
 3. **Submit is disabled until all 6 are assigned**, and the disabled state must state why in visible text ("Assign all 6 cards to continue") — never a bare greyed button. The button must remain focusable while disabled so assistive tech can reach the explanation (`aria-disabled`, not the `disabled` attribute).
 4. **On submit, the true holder of all six cards is revealed** (the engine returns `actualHolders` and `RULES.md` makes the reveal unconditional). Each row shows the learner's assignment against the truth, marked with a glyph and text, never colour alone. The reveal is the teaching payload of the whole checkpoint — it must be the most prominent thing on screen after submit, not a footnote under the button.
-5. **Three outcomes must be distinguishable, not two.** `RULES.md` rows 13–15 give: *your team scores*; *the opposing team scores* because an opponent held at least one of the six; *void* — your team held all six but a location was wrong, so nobody scores. A binary right/wrong treatment is a spec violation. Each outcome gets its own heading, its own glyph, and one sentence naming the rule that produced it. The void case in particular is counter-intuitive and is the reason this checkpoint exists.
+5. **Two outcomes must be distinguishable.** `RULES.md` rows 13–15 give: *your team is awarded it*, or *the opposing team is*. Each gets its own glyph and one sentence naming the rule that produced it. The counter-intuitive case — and the reason this checkpoint exists — is that holding all six of a half-suit is not enough: naming the wrong teammate for even one card hands the whole thing to the opponents. *(This clause originally required three outcomes including a void; the rule changed after this document was written.)*
 6. **A wrong claim is never a dead end.** The learner may revise and resubmit without limit. On the second incorrect attempt, reveal a hint naming one card's holder. There is no scoring here; the objective is comprehension.
 7. Options are the **three seats on the learner's own team, including the learner**. Label the learner's own option "You". Opponent seats must not appear as options — offering an illegal choice teaches the wrong rule, and the engine rejects it as `ASSIGN_OPPONENT`.
 8. **The six cards are the half-suit's six cards, not the learner's hand.** A learner may claim a half-suit while holding none of it (`RULES.md` row 16). Rows are generated from the half-suit definition. Cards the learner happens to hold may be marked as such, but holding a card must never be a precondition for it appearing as a row.
@@ -794,11 +794,11 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 57. "10" fits inside a hand chip at 320px with ≥ 2px side bearing and is not clipped or ellipsised.
 58. The red joker and the black joker are distinguishable from each other **in greyscale**, at hand-chip size (28px) and at full size, and both carry their full text label in their accessible name.
 59. A seat at 0 cards shows the word "out", carries " — out" in its accessible name, and remains at its original ring position; no seat reflows when a player goes out.
-60. All three claim outcomes are reachable in the guide and each renders a distinct heading, glyph, and rule sentence: your team scores, opposing team scores, void.
+60. Both claim outcomes are reachable in the guide and each renders a distinct glyph and rule sentence: your team is awarded it, or the opposing team is. *(Superseded: originally listed three outcomes including a void, which `RULES.md` §6 no longer has.)*
 61. After submitting a claim, the true holder of all six cards is displayed.
 62. The claim sheet renders all six rows for a half-suit of which the learner holds zero cards.
 63. Where a pass or designate choice is offered, it is a list of ≥ 44px seat rows; `pass` lists only teammates with cards and `designate` lists only opponents with cards, and each screen states why the learner is choosing.
-64. The final result screen renders a tie correctly (reachable when a void produces 4–4), not only a win or a loss.
+64. The final result screen renders a decisive win. A draw is unreachable by construction — every resolved half-suit is awarded to a team and nine is odd — so there is no tie state to render. *(Superseded: originally required a tie screen, which the confirmed rules make impossible.)*
 65. Each incorrect answer on the legality checkpoint names the specific broken rule, and the four candidate asks across the checkpoint cover four distinct engine error codes.
 
 ---

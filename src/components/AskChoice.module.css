@@ -38,6 +38,33 @@
   gap: var(--dg-node-gap);
 }
 
+/*
+ * Desktop: four options in two columns of two, and a tighter sheet rhythm.
+ *
+ * Same measured problem as the claim sheet. Each option is a 17px label beside a card face,
+ * so it stands 71px tall; four of them plus the gaps are 307px, and with the step's own title
+ * and body above, checkpoint 1 wanted 625px of an annotation column that is 552px at 1024x768
+ * and 584px at 1280x800. `ask-option-3` — the correct answer — sat 49px below the scrollport
+ * fold, which QA_DESKTOP criterion 7 forbids and which is a straightforwardly bad way to ask
+ * someone a multiple-choice question.
+ *
+ * Two columns halve the block to 150px. Nothing shrinks: at the 1024 floor each option still
+ * gets 212px of width, which holds the longest label ("Ask Dana for the 3 of spades") over two
+ * lines beside its card. `align-items: start` keeps a wrong answer's explanation from
+ * stretching the option beside it.
+ */
+@media (width >= 60rem) {
+  .options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .choice {
+    gap: var(--dg-u2);
+    padding-block: var(--dg-u2);
+  }
+}
+
 .option {
   display: grid;
   gap: var(--dg-u1);

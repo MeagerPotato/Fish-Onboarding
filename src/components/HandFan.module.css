@@ -53,9 +53,18 @@
   }
 }
 
+/*
+ * 40px, not 44 — because 768px is where the shell stops being full-width. From here up it is
+ * capped (560px on a tablet, then a 496px column beside the teaching from 960), so the hand
+ * strip is narrower at 768 than it was at 700. The hand peaks at 11 cards on steps 5, 6, 10
+ * and 11, and 11 x 44px plus the group gaps came to 514px against 512 available at 768x1024
+ * and 496 at 1280x800: the strip scrolled and the last card sat off the right edge, which
+ * QA_DESKTOP criterion 15 forbids. 40px lands the peak hand at 470px and keeps the rank at
+ * 22px and the suit at 18px, both clear of the 16px/14px floors (MOBILE_SPEC §7.1).
+ */
 @media (min-width: 768px) {
   .hand {
-    --dg-card-md: 44px;
+    --dg-card-md: 40px;
   }
 }
 

@@ -193,6 +193,10 @@
  * At 960px the shell goes two-column and the table zone stops being a 200px band, so the
  * log stops being a ticker and becomes a column to read. Same breakpoint as the shell's,
  * on purpose: below it the band is still 200px and a taller log would crowd out the table.
+ *
+ * These caps are ceilings, not floors: the seat ring now takes its own minimum out of the
+ * table zone first (AppShell `.table`, TableView `.seats`) and the log gets what is left, so
+ * neither of these numbers can starve the ring however tall the zone happens to be.
  */
 @media (min-width: 60rem) {
   .entry {

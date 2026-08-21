@@ -130,10 +130,25 @@
   padding-block-end: var(--safe-b);
 }
 
-/* Seat ring takes the slack; the log keeps its line on the zone's bottom edge (§4.4). */
+/*
+ * The ring is sized first; the log takes what is left (§4.4).
+ *
+ * This order is the fix for a measured clipping bug, not a preference. With the log as the
+ * `auto` track it took its own maximum — 4rem on a phone, 46svh on desktop — and the ring got
+ * the remainder. At 1024x768 that remainder was 59px against a ring that cannot be shorter
+ * than 2·ry + one 56px token, so the top three seat tokens were pushed 29–31px above this
+ * zone's clip edge and Mia's, Dana's and Kofi's names were cut in half on 13 of the 19 steps.
+ * The same thing happened at 320–414px from the first two-entry step onward.
+ *
+ * `auto` on the ring resolves to the `min-block-size` TableView gives it, so the ring's floor
+ * is now stated by the component that knows the geometry, and `minmax(0, 1fr)` lets the log —
+ * which is a scroll container and loses nothing by being shorter — absorb every remaining
+ * pixel. Both tracks are still constant between steps, which is what QA_DESKTOP criterion 5
+ * actually protects.
+ */
 .table {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 /* The only zone that flexes, and the only one that scrolls (§4.2, §6.7). */

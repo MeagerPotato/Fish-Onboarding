@@ -38,7 +38,12 @@
   color: var(--suit, var(--dg-ink));
   line-height: 1;
   text-align: center;
-  user-select: none;
+  /*
+   * Selectable on purpose. MOBILE_SPEC §11.41 and §11.54 both require card ranks and suits to
+   * be selectable text — the cheat sheet renders all 54 faces and a learner has to be able to
+   * copy from it. `touch-action: manipulation` already kills the double-tap-zoom delay, which
+   * is the only thing `user-select: none` was buying here.
+   */
   touch-action: manipulation;
   transition:
     border-color var(--dg-fast) var(--dg-ease),
@@ -87,8 +92,15 @@
   letter-spacing: -0.02em;
 }
 
+/*
+ * 0.47, not 0.44. MOBILE_SPEC §11.19 puts the suit-glyph floor at 14px, relaxed to 12px only
+ * at the 320px width. The hand card is 30px across the 360–413px band, where 0.44 resolved to
+ * 13.2px — 0.8px under the floor at a width the relaxation does not cover. 0.47 lands it at
+ * 14.1px there, keeps 320px at 12.7px (still over its own floor), and stays well inside the
+ * card: rank + gap + suit is 34px of a 42px face.
+ */
 .suit {
-  font-size: max(var(--dg-u3), calc(var(--cw) * 0.44));
+  font-size: max(var(--dg-u3), calc(var(--cw) * 0.47));
 }
 
 /*

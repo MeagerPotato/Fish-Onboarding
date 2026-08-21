@@ -64,8 +64,11 @@
   color: var(--dg-red);
 }
 
+/* --dg-rule is the *border* token (3.30:1); as text it fails 4.5:1 in both schemes, which is
+   exactly the mistake the three-way accent split exists to prevent. --dg-soft is the quietest
+   ink that still clears AA: 5.47:1 light, 5.78:1 dark. */
 .sep {
-  color: var(--dg-rule);
+  color: var(--dg-soft);
 }
 
 /* Accent 2 of 2. A live count from ScoreVM.toWin; it vanishes the moment the game is won,
@@ -301,12 +304,15 @@
     gap: 0;
   }
 
-  /* The badge is the only mark left, so it fills the cell rather than sitting inside it. */
+  /* The badge is the only mark left, so it fills the cell rather than sitting inside it.
+     Stays at the 13px type floor (MOBILE_SPEC §7.1, §11.37): it is generated content, but
+     Chrome exposes it and it is read as text. `line-height: 1` from .chip keeps a 13px glyph
+     inside the 16px cell. */
   .chip[data-state='team0']::before,
   .chip[data-state='team1']::before {
     inline-size: 100%;
     block-size: 100%;
     border: 0;
-    font-size: 11px;
+    font-size: var(--dg-label);
   }
 }
