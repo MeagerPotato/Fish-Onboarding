@@ -16,13 +16,27 @@ completely self-contained — no accounts, no backend, no network requests after
 
 | | |
 |---|---|
-| Rules engine | Done — 54 cards, 9 half-suits, 82 tests including 300 fuzzed games |
+| Rules engine | Done — 54 cards, 9 half-suits, 86 tests including 300 fuzzed games |
 | Teaching script | Done — 19 steps, 4 checkpoints, verified against the engine |
-| Components | Done — headless, semantic, accessible, **deliberately unstyled** |
-| Visual design | **Not started.** See [DESIGN_BRIEF.md](DESIGN_BRIEF.md) |
+| Components | Done — headless, semantic, accessible |
+| Visual design | Done — see [DESIGN_BRIEF.md](DESIGN_BRIEF.md) for the contract it was built to |
 
-Every `*.module.css` is a generated list of empty class rules waiting for the designer. The app
-runs and is fully usable; it just has no styling yet.
+**82 KB gzipped of a 98 KB budget.** No webfont, no images, no external requests, no WebGL —
+see [docs/MOTION_STACK.md](docs/MOTION_STACK.md) for why Three.js was measured and rejected.
+
+### Where the design came from
+
+Three studies, each measured rather than asserted:
+
+- [docs/DESIGN_INSPIRATION.md](docs/DESIGN_INSPIRATION.md) — a reference site the look is drawn
+  from. The headline finding is that it uses no WebGL at all: its feel is plain CSS and DOM.
+- [docs/DIAGRAM_SYSTEM.md](docs/DIAGRAM_SYSTEM.md) — the token system, adapted from
+  `cathrynlavery/diagram-design` (MIT, © 2025 Cathryn Lavery). Technique adapted; nothing copied.
+- [docs/MOTION_STACK.md](docs/MOTION_STACK.md) — why the animation layer is 1.6 KB of CSS.
+
+The rule that binds all of it: **colour never encodes anything on its own.** Team is carried by
+corner radius, suit by glyph, state by border style. The whole interface survives greyscale, which
+is checked by measurement rather than by eye.
 
 ---
 
