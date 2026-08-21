@@ -20,7 +20,7 @@ export const ACTS = [
   { id: 1, title: 'The table', goal: 'What you are looking at and what you are trying to win.' },
   { id: 2, title: 'The ask', goal: 'The only move you make on your turn, and the four rules it must obey.' },
   { id: 3, title: 'Reading the table', goal: 'Why every question out loud is the real game.' },
-  { id: 4, title: 'The claim', goal: 'How a half-suit is actually won — and the three ways it can end.' },
+  { id: 4, title: 'The claim', goal: 'How a half-suit is won, and what it costs to get it wrong.' },
   { id: 5, title: 'Winning', goal: 'Running out of cards, the endgame, and the ninth half-suit.' },
   { id: 6, title: 'Take it to the table', goal: 'The whole game on one card.' },
 ] as const

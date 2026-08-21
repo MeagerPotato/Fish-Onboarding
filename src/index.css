@@ -1,12 +1,26 @@
 /*
- * Minimal reset and the design tokens Codex will fill in.
+ * The design system. Every component styles against these tokens and defines no colours,
+ * sizes or durations of its own.
  *
- * This file is deliberately almost empty. It exists so the app boots and is legible, and so
- * there is one obvious place for the design system to land. Everything here is expected to
- * be replaced — see CODEX_HANDOFF.md.
+ * Sources, all measured rather than invented:
+ *   docs/DIAGRAM_SYSTEM.md    — the token set, contrast ratios, the 4px rhythm, the rules
+ *                               that bind every diagram (max 2 accents, shape over colour)
+ *   docs/DESIGN_INSPIRATION.md — motion values from the reference site
+ *   docs/MOBILE_SPEC.md        — zone heights, touch targets, type floor
  *
- * The two things that should SURVIVE a redesign are marked KEEP.
+ * The `--dg-` prefix is the design grammar. One vocabulary, used everywhere.
+ *
+ * THREE THINGS THAT ARE LOAD-BEARING, not taste:
+ *   1. Colour never encodes anything on its own. Team is carried by corner radius, suit by
+ *      glyph, state by border style. Colour reinforces; it never informs alone.
+ *   2. The accent is split into three tokens by job — tint (fill), line (border), ink (text) —
+ *      so it is impossible to use a fill colour as text and fail contrast. The reference site
+ *      has two real contrast failures from doing exactly that.
+ *   3. Reduced motion is implemented by zeroing the duration tokens. No component needs its
+ *      own reduced-motion rule.
  */
+
+/* ------------------------------------------------------------------ reset --- */
 
 *,
 *::before,
@@ -19,24 +33,8 @@
 }
 
 html {
-  /* KEEP: never disable pinch-zoom, and never cap it. docs/MOBILE_SPEC.md §2. */
+  /* Never disable or cap pinch-zoom. docs/MOBILE_SPEC.md §2. */
   -webkit-text-size-adjust: 100%;
-}
-
-body {
-  min-block-size: 100svh;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  /* Codex: replace with real tokens. Explicit values so the page never borrows a host theme. */
-  color: #0e1a2b;
-  background: #f6f7f9;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    color: #e8edf5;
-    background: #0e1a2b;
-  }
 }
 
 img,
@@ -54,14 +52,158 @@ textarea {
 }
 
 button {
-  /* KEEP: 44px minimum touch target. docs/MOBILE_SPEC.md §6. */
-  min-block-size: 44px;
-  min-inline-size: 44px;
+  /* 44px minimum touch target. docs/MOBILE_SPEC.md §6.1. */
+  min-block-size: var(--dg-node-min);
   cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
 }
 
-/* KEEP: motion is opt-out for everyone who asks. docs/MOBILE_SPEC.md §8. */
+ol,
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: var(--dg-s-focus) solid var(--dg-accent-line);
+  outline-offset: 2px;
+  border-radius: var(--dg-r-sm);
+}
+
+/* --------------------------------------------------------------- tokens --- */
+
+:root {
+  color-scheme: light dark;
+
+  /* -- surface and ink. Contrast ratios measured against --dg-paper. ------- */
+  --dg-paper: #fdfaf2; /* warm off-white; never pure white */
+  --dg-paper-2: #f4efe2; /* recessed / container fill */
+  --dg-ink: #1a1710; /* 17.15:1 */
+  --dg-muted: #55504a; /*  7.65:1 — secondary text */
+  --dg-soft: #6b665c; /*  5.47:1 — still AA at our 13px floor */
+  --dg-rule: #8f8a7e; /*  3.30:1 — meaningful borders */
+  --dg-hair: rgba(26, 23, 16, 0.14); /* decorative separators only */
+
+  /* -- accent, split by job so the wrong one cannot be used ---------------- */
+  --dg-accent-tint: rgba(224, 145, 42, 0.14); /* fill only — no contrast floor */
+  --dg-accent-line: #b87214; /* 3.69:1 — borders, markers, focus */
+  --dg-accent-ink: #8a5207; /*  6.12:1 — accent as text */
+
+  /* -- teams. Reinforcement only: radius is the primary channel. ----------- */
+  --dg-blue: #123e75; /* 10.21:1 */
+  --dg-red: #b2461c; /*  5.32:1 */
+
+  /* -- suits. Glyph is the primary channel; these reinforce. --------------- */
+  --dg-suit-spades: #17130c;
+  --dg-suit-clubs: #14532d;
+  --dg-suit-diamonds: #1b4f97;
+  --dg-suit-hearts: #b2461c;
+
+  /* -- 4px rhythm --------------------------------------------------------- */
+  --dg-u1: 4px;
+  --dg-u2: 8px;
+  --dg-u3: 12px;
+  --dg-u4: 16px;
+  --dg-u5: 20px;
+  --dg-u6: 24px;
+  --dg-u8: 32px;
+  --dg-u10: 40px;
+
+  /* -- radii. Team identity uses these: Blue 12px, Red 4px. --------------- */
+  --dg-r-sm: 4px;
+  --dg-r-md: 8px;
+  --dg-r-lg: 12px;
+  --dg-r-pill: 999px;
+
+  /* -- strokes. Anything meaningful is >= 1.5px and >= 3:1. ---------------- */
+  --dg-s-hair: 1px;
+  --dg-s-line: 1.5px;
+  --dg-s-strong: 2px;
+  --dg-s-focus: 3px;
+
+  /* -- type. Floor is 13px; 13px is body text here, not a micro-label. ----- */
+  --dg-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --dg-label: 13px;
+  --dg-name: 15px;
+  --dg-lead: 17px;
+  --dg-display: clamp(20px, 5.2vw, 28px);
+  --dg-track: 0.08em;
+  /*
+   * The reference site's "mono eyebrow" is not a mono face — it is uppercase plus tracking.
+   * We copy the technique, which costs nothing, rather than the second font, which costs 20 KB.
+   */
+
+  /* -- touch -------------------------------------------------------------- */
+  --dg-node-min: 44px;
+  --dg-node-gap: 8px;
+
+  /* -- motion. Two curves, two bands. Zeroed under reduced-motion. --------- */
+  --dg-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dg-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --dg-fast: 120ms; /* state change: a press, a selection */
+  --dg-slow: 240ms; /* zone-level change: a step transition */
+  /*
+   * Entrance distance scales with the size of the thing entering — the single most
+   * transferable rule from docs/DESIGN_INSPIRATION.md §4.
+   */
+  --dg-rise-chip: 8px;
+  --dg-rise-card: 12px;
+  --dg-rise-zone: 16px;
+  /* Pressing something squashes it slightly. The only affordance that survives on touch. */
+  --dg-press: 0.965;
+
+  /* -- shell zones. docs/MOBILE_SPEC.md §4: only the annotation zone flexes. */
+  --dg-zone-header: 48px;
+  --dg-zone-table: 200px;
+  --dg-zone-hand: 132px;
+  --dg-zone-nav: 64px;
+  --dg-page-pad: var(--dg-u3);
+  --dg-content-max: 1120px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dg-paper: #14130e;
+    --dg-paper-2: #1e1c15;
+    --dg-ink: #f4f1e8; /* 16.47:1 */
+    --dg-muted: #a9a499; /*  7.49:1 */
+    --dg-soft: #948f84; /*  5.78:1 */
+    --dg-rule: #6e695e; /*  3.41:1 */
+    --dg-hair: rgba(244, 241, 232, 0.16);
+
+    --dg-accent-tint: rgba(224, 145, 42, 0.18);
+    --dg-accent-line: #e0912a; /*  7.31:1 */
+    --dg-accent-ink: #efb65c; /* 10.20:1 */
+
+    --dg-blue: #6fa6e8; /*  7.35:1 */
+    --dg-red: #f3b79e; /* 10.70:1 */
+
+    --dg-suit-spades: #edeae1;
+    --dg-suit-clubs: #5fbf87;
+    --dg-suit-diamonds: #7fb4f0;
+    --dg-suit-hearts: #f3b79e;
+  }
+}
+
+/*
+ * Reduced motion. Zeroing the tokens is the mechanism — see DIAGRAM_SYSTEM §3.4. The
+ * blanket rule below is the belt; the tokens are the braces, so a component that forgets
+ * to reference a token still cannot animate.
+ */
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --dg-fast: 0ms;
+    --dg-slow: 0ms;
+    --dg-rise-chip: 0px;
+    --dg-rise-card: 0px;
+    --dg-rise-zone: 0px;
+    --dg-press: 1;
+  }
+
   *,
   *::before,
   *::after {
@@ -69,5 +211,47 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ----------------------------------------------------------------- base --- */
+
+body {
+  min-block-size: 100svh;
+  margin: 0;
+  font-family: var(--dg-font);
+  font-size: var(--dg-lead);
+  line-height: 1.5;
+  color: var(--dg-ink);
+  background: var(--dg-paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Card ranks and counts must not jitter as they change. */
+[data-card],
+[data-testid^='count-'],
+[data-testid='progress'] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ utilities --- */
+
+/*
+ * The eyebrow treatment, defined once. Uppercase + tracking reads as "mono label" without
+ * loading a mono face.
+ */
+.dg-eyebrow {
+  font-size: var(--dg-label);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  text-transform: uppercase;
+  color: var(--dg-soft);
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
   }
 }
