@@ -193,13 +193,13 @@ tiebreaking half-suit.
 > genuine (rare) outcome, not swept under the rug.
 
 `EIGHTS` is dealt, asked for, and claimed exactly like the other eight. It has no special powers and
-is not held back for a tiebreak — it simply exists, and its existence is what makes the total odd.
+is never held back. It is in the deal from the first card.
 
-> **ASSUMPTION FLAGGED FOR REVIEW.** This section reads "tiebreaking" as *structural*: the 9th
-> half-suit exists so the total is odd and clean games cannot tie. The alternative reading — that
-> `EIGHTS` is set aside and only played when the other eight finish 4–4 — is **not** what this repo
-> implements. If the club's intent is the second reading, say so and this section plus the engine's
-> deal change together; nothing else does.
+> **Confirmed by the club, 2026-08-20.** All 54 cards are dealt. The 9th half-suit is formed by the
+> four 8s and the two jokers, and it acts as the tiebreaker when the score reaches 4–4. That is
+> exactly what this repo implements: `EIGHTS` is an ordinary half-suit, and because it makes the
+> total odd, a 4–4 score is always broken by whoever wins it. The tutorial's scripted game ends this
+> way on purpose — eight half-suits split 4–4, and the learner personally claims `EIGHTS` to win 5–4.
 
 ---
 

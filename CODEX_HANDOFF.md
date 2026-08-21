@@ -11,21 +11,33 @@ what is yours, what is not yours, and what "done" means.
 ## 1. What this product is
 
 An interactive guide that teaches a complete beginner to play Literature (Canadian Fish) in
-about ten minutes. It is a linear stepper: 19 steps across 6 acts, 4 of which are interactive
-checkpoints the learner must solve before continuing.
+about ten minutes — 9.2 minutes for a typical reader, 10.4 reading carefully. It is a linear
+stepper: 19 steps across 6 acts, 4 of which are interactive checkpoints the learner must solve
+before continuing.
 
 Most people arrive by **scanning a QR code on a phone**, sitting at a table, wanting to start
 playing. That is the primary case. Desktop matters, but it is second.
 
 The rules variant is pinned in `RULES.md` and is not negotiable: 54 cards, **nine half-suits**,
-the ninth being the four 8s plus both jokers.
+the ninth being the four 8s plus both jokers. All 54 are dealt; that ninth half-suit is an
+ordinary one, and because it makes the total odd it is what breaks a 4–4 score. The scripted
+game ends exactly that way, so **the ninth half-suit is a visual motif, not a footnote** — see
+`[data-ninth]` below.
 
-### The one copy rule
+### Two copy rules
 
-The word is **half-suit**, everywhere, always. Never "book". There is exactly one permitted
-exception — a glossary note at the bottom of `CheatSheet.tsx` — and a test enforces the rest
-(`tests/tutorial/script.test.ts`, "terminology"). If you add any user-visible string, it must
-obey this.
+You are not writing the teaching copy — that is finished and test-locked. But you will add
+microcopy (button labels, tooltips, empty states, `aria-label`s), and it has to match.
+
+**1. The word is "half-suit", everywhere, always. Never "book."** There is exactly one
+permitted exception — a glossary note at the bottom of `CheatSheet.tsx` — and a test enforces
+the rest (`tests/tutorial/script.test.ts`, "terminology").
+
+**2. Plain language.** The guide is read at a table, by someone who has never played, usually
+on a phone, often while other people are talking. The copy was rewritten to suit that: it now
+**averages 9 words per sentence, with no sentence over 18 words**, and a test holds it there.
+Match that register. Short sentences, common words, second person, active voice. If a label
+needs a subordinate clause, it needs to be two labels.
 
 ---
 
@@ -52,7 +64,7 @@ You may also add CSS-only structure — pseudo-elements, container queries, view
 
 ## 3. What is not yours
 
-Do not edit these. They are covered by 81 tests and by pinned specs; changing them will either
+Do not edit these. They are covered by 82 tests and by pinned specs; changing them will either
 break the build or silently make the guide teach something false.
 
 | Off limits | Why |
@@ -100,7 +112,17 @@ Not suggestions. The guide is unplayable if these break.
    stylesheet.
 6. **Visible focus on every interactive element.** Keyboard-only users must be able to complete
    all four checkpoints.
-7. **Text contrast at least 4.5:1** for body copy, 3:1 for large text and meaningful borders.
+7. **Blocked buttons use `aria-disabled`, not `:disabled` — style them accordingly.** Desktop QA
+   found that a genuinely `disabled` button leaves the tab order, so a keyboard or screen-reader
+   user hits a dead end with no way to find out what is missing. `claim-submit` and `nav-next`
+   therefore stay focusable and carry `aria-disabled="true"` plus `data-blocked="true"`.
+
+   **`.submit:disabled` and `.next:disabled` will never match anything.** Target
+   `[data-blocked="true"]` instead. Both must still look unavailable, must still show a focus
+   ring, and the reason next to them (`claim-progress`, `nav-blocked`) must stay visible — it is
+   deliberately not screen-reader-only, because a sighted learner wondering why Next looks dead
+   deserves the same answer.
+8. **Text contrast at least 4.5:1** for body copy, 3:1 for large text and meaningful borders.
    `docs/DESIGN_INSPIRATION.md` notes two real contrast failures on the reference site — do not
    inherit them.
 
@@ -111,7 +133,7 @@ Not suggestions. The guide is unplayable if these break.
 From `docs/MOBILE_SPEC.md`, and the reason the router was removed:
 
 - **≤ 98 KB compressed first load**, 120 KB hard ceiling.
-- Current JS is **74.8 KB gzipped**. That is your headroom: about 23 KB for CSS and fonts.
+- Current JS is **74.6 KB gzipped**. That is your headroom: about 23 KB for CSS and fonts.
 - Zero raster images. Zero external requests — a strict self-contained page.
 - If you want a webfont, one file, subset, `font-display: swap`, with a real fallback stack.
   Two faces is already a lot. `docs/DESIGN_INSPIRATION.md` §3 is worth reading first: the
@@ -174,7 +196,7 @@ sheet must show the whole history, not a window onto it.
 ## 7. Definition of done
 
 ```bash
-npm run verify   # typecheck + lint + 81 tests. Must pass.
+npm run verify   # typecheck + lint + 82 tests. Must pass.
 npm run build    # must stay under the byte budget above.
 ```
 
@@ -199,6 +221,8 @@ Then, by hand:
   not an aspiration.
 - `docs/MOBILE_SPEC.md` — the mobile contract: zone heights, breakpoints, the QR entry path,
   and 65 pass/fail acceptance criteria.
-- `docs/QA_DESKTOP.md` — the desktop equivalent.
+- `docs/QA_DESKTOP.md` — the desktop equivalent: 43 numbered pass/fail criteria, plus the
+  measurements behind them (the tallest step is 1718px of content against an 800px viewport, and
+  the six claim rows are 406px tall).
 - `CURRICULUM.md` — why the guide is shaped the way it is, and where the ten minutes go.
 - `RULES.md` — the game itself.

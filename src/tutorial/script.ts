@@ -97,11 +97,11 @@ export const SCRIPT: readonly Step[] = [
     act: 1,
     mode: 'still',
     actions: [],
-    title: 'Six players, two teams, one deck',
+    title: 'Six players, two teams',
     body:
-      'You are Blue, with Mia and Kofi. Red is Ravi, Dana and Sam, and the teams sit alternately ' +
-      'round the table. You cannot see anyone else’s cards — not even your own partners’. ' +
-      'Everything you learn, you learn out loud.',
+      'You play with Mia and Kofi on the Blue team. Ravi, Dana and Sam are Red. Seats ' +
+      'alternate, so an opponent sits on each side of you. You can only see your own cards. ' +
+      'You learn everything by listening.',
   },
   {
     id: 'the-nine',
@@ -110,11 +110,10 @@ export const SCRIPT: readonly Step[] = [
     actions: [],
     title: 'Nine half-suits, five to win',
     body:
-      '54 cards: a normal pack plus both jokers, dealt nine each. It divides into nine sets of ' +
-      'six, called half-suits. Each suit splits in two, low (2 to 7) and high (9 to Ace) — that ' +
-      'is eight. The ninth is the odd one out: the four 8s with the red and black jokers. Each ' +
-      'half-suit is worth one point, and five wins. Nine is odd on purpose, because with eight a ' +
-      '4–4 stalemate is common. That is why the club calls Eights & Jokers the tiebreaking half-suit.',
+      'The deck is 54 cards: a full pack plus both jokers. Everyone gets nine. The cards split ' +
+      'into nine sets of six. Each set is a half-suit. Every suit makes two: the low half ' +
+      '(2 to 7) and the high half (9 to Ace). That is eight. The ninth is the four 8s plus the ' +
+      'two jokers. Each half-suit is worth one point, and five points wins.',
   },
 
   /* -------------------------------------------------------- act 2: the ask --- */
@@ -123,51 +122,52 @@ export const SCRIPT: readonly Step[] = [
     act: 2,
     mode: 'still',
     actions: [],
-    title: 'On your turn, you ask for one card',
+    title: 'Your turn: ask for one card',
     body:
-      'That is the whole move: name one card and one opponent, out loud, in front of everybody. ' +
-      'They hand it over or they say no. No drawing, no discarding, no passing. You ask, or you ' +
-      'claim a half-suit. Nothing else.',
+      'On your turn you do one of two things. You ask for a card, or you claim a half-suit. To ' +
+      'ask, you name one card and one opponent, out loud. They hand it over, or they say no. ' +
+      'There is no drawing and no discarding.',
   },
   {
     id: 'cp1',
     act: 2,
     mode: 'beat',
     actions: [A(0, 1, '5S')],
-    title: 'Your turn — which ask is even allowed?',
+    title: 'Which ask is allowed?',
     body:
-      'An ask must clear four rules: only an opponent, never a teammate; you must already hold a ' +
-      'card of that half-suit; never a card already in your hand; and they must still have cards.',
+      'An ask must follow four rules. Ask an opponent, never a teammate. Hold a card of that ' +
+      'half-suit already. Do not ask for a card you hold. And the player you ask must still have ' +
+      'cards.',
     checkpoint: {
       kind: 'ask-choice',
       brief: 'You hold the 2, 3 and 4 of spades. Three of these break a rule.',
-      prompt: 'Which ask is legal?',
+      prompt: 'Which ask is allowed?',
       options: [
         {
           target: 2,
           card: '6S',
-          note: 'Mia is your partner. You may never ask a teammate — which is what makes partners so hard to use.',
+          note: 'Mia is on your team. You can never ask a teammate for a card.',
         },
         {
           target: 1,
           card: '9D',
-          note: 'You hold no high diamond, so you may not fish there. You can only ask into half-suits you already hold.',
+          note: 'You hold no high diamond. You can only ask in half-suits you already hold.',
         },
         {
           target: 1,
           card: '2S',
-          note: 'The 2 of spades is already yours. Asking for a card in your own hand is never allowed.',
+          note: 'The 2 of spades is already in your hand. You cannot ask for a card you hold.',
         },
         {
           target: 1,
           card: '5S',
-          note: 'Legal on all four counts — an opponent, a half-suit you hold, a card you lack, and Ravi still has cards.',
+          note: 'All four rules pass. Ravi is an opponent, you hold low spades, and you lack the 5.',
         },
       ],
       correct: 3,
       reveal:
-        'Ravi hands it over. A hit, so the turn stays yours. Notice what the table just learned ' +
-        'for free: you hold low spades.',
+        'Ravi hands it over. That is a hit, so you go again. The table now knows you hold low ' +
+        'spades.',
     },
     expect: { event: 'ask', hit: true, turnAfter: 0 },
   },
@@ -176,11 +176,11 @@ export const SCRIPT: readonly Step[] = [
     act: 2,
     mode: 'beat',
     actions: [A(0, 1, '8H')],
-    title: 'A hit keeps the turn, so you go again',
+    title: 'A hit means you go again',
     body:
-      'You hold the 8 of clubs and 8 of diamonds, so you are in Eights & Jokers — 8s and jokers ' +
-      'are one half-suit, so an 8 lets you ask for a joker and a joker lets you ask for an 8. ' +
-      'You try Ravi for the 8 of hearts. It lands.',
+      'You hold the 8 of clubs and the 8 of diamonds. Both sit in the Eights & Jokers half-suit, ' +
+      'so you can ask for any 8 or either joker. You ask Ravi for the 8 of hearts and get it. ' +
+      'Two hits, and it is still your turn.',
     expect: { event: 'ask', hit: true, turnAfter: 0 },
   },
   {
@@ -188,11 +188,11 @@ export const SCRIPT: readonly Step[] = [
     act: 2,
     mode: 'beat',
     actions: [A(0, 3, '6S')],
-    title: 'A miss hands the turn to whoever you asked',
+    title: 'A miss ends your turn',
     body:
-      'You ask Dana for the 6 of spades. She does not have it, and now the turn is hers. Guess ' +
-      'wrong and you hand the initiative to the person you were robbing. Worse: the 6 has been ' +
-      'with Mia all along, and you can never ask your own partner for it.',
+      'You ask Dana for the 6 of spades. She does not have it, so now it is her turn. Guess ' +
+      'wrong and you hand the turn to an opponent. The 6 of spades was with Mia all along. She ' +
+      'is your partner, so you can never ask her for it.',
     expect: { event: 'ask', hit: false, turnAfter: 3 },
   },
 
@@ -202,11 +202,11 @@ export const SCRIPT: readonly Step[] = [
     act: 3,
     mode: 'montage',
     actions: [A(3, 0, '3S'), A(3, 2, '9S'), A(3, 0, '2H'), A(3, 2, '4S')],
-    title: 'Dana runs, and tells you what she has',
+    title: 'Dana’s turn tells you a lot',
     body:
-      'Three hits: your 3 of spades, Mia’s 9 of spades, your 2 of hearts. Then she asks Mia for ' +
-      'the 4 of spades, misses, and the turn crosses over. All of it public. You now know for ' +
-      'certain that Dana holds your 3 of spades — you watched it go. Remember that.',
+      'Dana gets three hits: your 3 of spades, Mia’s 9 of spades, then your 2 of hearts. She ' +
+      'asks Mia for the 4 of spades and misses, so the turn goes to Mia. Everyone saw all of ' +
+      'that. You now know Dana holds your 3 of spades. Remember it.',
     expect: { event: 'ask', hit: false, turnAfter: 2 },
   },
   {
@@ -214,12 +214,11 @@ export const SCRIPT: readonly Step[] = [
     act: 3,
     mode: 'montage',
     actions: [A(2, 1, '7S'), A(1, 4, '5H'), A(4, 5, 'RJ'), A(4, 5, 'BJ'), A(4, 1, '2C'), A(1, 0, '5H')],
-    title: 'The turn goes round and the log fills up',
+    title: 'The turn moves, and the table learns',
     body:
-      'Mia asks Ravi for the 7 of spades and misses — but she has just proved she holds a low ' +
-      'spade, or she could not have asked. Ravi misses. Kofi takes both jokers off Sam, so both ' +
-      'are certainly his. Two more misses and the turn is back with you. Nobody wrote anything ' +
-      'down; everybody heard everything.',
+      'Mia asks Ravi for the 7 of spades and misses. But she just proved something: she holds a ' +
+      'low spade, or she could not have asked at all. Ravi misses too. Kofi takes both jokers ' +
+      'from Sam, so you know he has them. Two more misses, and it is your turn again.',
     expect: { event: 'ask', hit: false, turnAfter: 0 },
   },
   {
@@ -227,40 +226,40 @@ export const SCRIPT: readonly Step[] = [
     act: 3,
     mode: 'beat',
     actions: [A(0, 3, '3S')],
-    title: 'One of these is a certainty, not a guess',
+    title: 'One of these is a sure thing',
     body:
-      'Most asks are a gamble. A few are not. Somewhere in what you just watched is a card whose ' +
-      'exact location you know for sure — and which you are allowed to ask for.',
+      'Most asks are a guess. Some are not. You watched a card move a moment ago, so you know ' +
+      'exactly where it is now.',
     checkpoint: {
       kind: 'ask-choice',
       brief: 'You hold the 2, 4 and 5 of spades.',
-      prompt: 'Which ask is guaranteed to hit?',
+      prompt: 'Which ask is certain to work?',
       options: [
         {
           target: 3,
           card: '3S',
-          note: 'Certain. Dana took this out of your hand a moment ago, in the open, and it has not moved.',
+          note: 'Right. Dana took this from your hand a moment ago, in front of everyone. It has not moved.',
         },
         {
           target: 5,
           card: '3S',
-          note: 'Legal but wrong — you watched the 3 go to Dana, not Sam. This misses and hands Sam the turn.',
+          note: 'Allowed, but wrong. The 3 went to Dana, not Sam. This would miss and give Sam the turn.',
         },
         {
           target: 3,
           card: '6S',
-          note: 'Legal but a pure guess. Nothing public has told you where the 6 of spades is.',
+          note: 'Allowed, but a guess. Nobody has shown you where the 6 of spades is.',
         },
         {
           target: 2,
           card: '3S',
-          note: 'Illegal before it is even wrong. Mia is your partner, and partners can never be asked.',
+          note: 'Not allowed. Mia is your partner, and you can never ask a partner for a card.',
         },
       ],
       correct: 0,
       reveal:
-        'Straight back. This is the game underneath the cards: every question and every card ' +
-        'handed over is a public record, and the winners are still listening on the twentieth ask.',
+        'Dana hands it straight back. This is the real game. Every question and every card is ' +
+        'public. Good players remember all of it.',
     },
     expect: { event: 'ask', hit: true, turnAfter: 0 },
   },
@@ -269,11 +268,11 @@ export const SCRIPT: readonly Step[] = [
     act: 3,
     mode: 'beat',
     actions: [A(0, 3, '7S')],
-    title: 'One more and the set is nearly home',
+    title: 'One more card',
     body:
-      'Dana had to hold a low spade to ask for one, and only the 6 and 7 were unaccounted for. ' +
-      'You try the 7 and it comes over. You now hold five of the six low spades. Only the 6 is ' +
-      'missing.',
+      'Dana asked for a low spade earlier, so she had to hold one. Only the 6 and the 7 were ' +
+      'unaccounted for. You ask for the 7 and get it. You now hold five of the six low spades. ' +
+      'Only the 6 is missing.',
     expect: { event: 'ask', hit: true, turnAfter: 0 },
   },
 
@@ -283,36 +282,35 @@ export const SCRIPT: readonly Step[] = [
     act: 4,
     mode: 'beat',
     actions: [],
-    title: 'Your turn — claim the low spades',
+    title: 'Claim the low spades',
     body:
-      'Holding cards scores nothing. To win a half-suit you claim it: name it, then say exactly ' +
-      'which player on your team holds each of its six cards — six specific names, and you may not ' +
-      'ask your partners. You hold five of the six. The last is the 6 of spades, which you have never touched. But ' +
-      'you have been listening, and the table already told you where it is.',
+      'Holding cards scores nothing. To win a half-suit you claim it. Name the half-suit, then ' +
+      'name who holds each of its six cards. You hold five of them. You have never touched the ' +
+      '6 of spades, but the table already told you where it is.',
     checkpoint: {
       kind: 'claim',
-      brief: 'Place all six with the player actually holding them. Blue team only.',
+      brief: 'Put each card with the player holding it. Blue team only.',
       prompt: 'Who holds each low spade?',
       halfSuit: 'LOW-S',
       deductions: [
-        { card: '2S', because: 'Yours since the deal.' },
-        { card: '3S', because: 'Dana took it; you took it straight back.' },
-        { card: '4S', because: 'Yours since the deal.' },
-        { card: '5S', because: 'Your very first ask, off Ravi.' },
+        { card: '2S', because: 'In your hand from the start.' },
+        { card: '3S', because: 'Dana took it from you, and you took it back.' },
+        { card: '4S', because: 'In your hand from the start.' },
+        { card: '5S', because: 'Your first ask. You took it from Ravi.' },
         {
           card: '6S',
           because:
-            'Mia asked for the 7 of spades, so she holds a low spade. Every other one is in your hand, so hers is the 6.',
+            'Mia asked for a low spade, so she holds one. You hold all the others. Hers must be the 6.',
         },
         { card: '7S', because: 'You took it from Dana one ask ago.' },
       ],
       whyWrong:
-        'That is the trap. When your team really does hold all six but you put one in the wrong ' +
-        'hand, the half-suit is voided — gone from the game, scored by nobody. A claim is not ' +
-        '"do we have these", it is "do I know exactly where these are".',
+        'That is the trap. Your team held all six, but one was in the wrong hand. The half-suit is ' +
+        'now void: it leaves the game and nobody scores it. A claim is not "do we have these". ' +
+        'It is "do I know where they are".',
       reveal:
-        'All six correct. Blue scores it, the cards leave every hand, and — this surprises people ' +
-        '— your turn continues. A claim never costs you the turn, whichever way it goes.',
+        'All six right. Blue scores it and the cards leave every hand. And it is still your ' +
+        'turn. A claim never ends your turn.',
     },
     expect: { event: 'claim', outcome: 'team0', turnAfter: 0, scoreAfter: [1, 0] },
   },
@@ -321,11 +319,11 @@ export const SCRIPT: readonly Step[] = [
     act: 4,
     mode: 'still',
     actions: [],
-    title: 'A claim ends in exactly three ways',
+    title: 'A claim ends in one of three ways',
     body:
-      'You just saw the good one. The other two matter more. If even one card is in an opponent’s ' +
-      'hand, the other team scores it — however right the rest were. If your team holds all six ' +
-      'but you misplace one, nobody scores and it is gone. Right cards, wrong hands, no points.',
+      'You just saw the good one. The other two matter more. If an opponent holds even one of ' +
+      'the six, the other team scores it. If your team holds all six but you name one wrong ' +
+      'hand, nobody scores it. Right cards, wrong hands, no points.',
   },
 
   /* --------------------------------------------------------- act 5: winning --- */
@@ -338,11 +336,11 @@ export const SCRIPT: readonly Step[] = [
       { type: 'claim', seat: 0, halfSuit: 'HIGH-C', assignments: { '9C': 2, TC: 2, JC: 2, QC: 4, KC: 4, AC: 4 } as Record<Card, Seat> },
       { type: 'claim', seat: 0, halfSuit: 'HIGH-H', assignments: { '9H': 4, TH: 0, JH: 2, QH: 2, KH: 4, AH: 4 } as Record<Card, Seat> },
     ],
-    title: 'The next few minutes, compressed',
+    title: 'Skipping ahead',
     body:
-      'A real game now runs another twenty or thirty asks. Skipping to the result: your team ' +
-      'converts three more — low clubs, high clubs, high hearts — each claimed exactly the way ' +
-      'you just did it. Blue 4, Red 0.',
+      'A real game runs another twenty or thirty asks here. We will jump to the result. Your ' +
+      'team wins three more half-suits: low clubs, high clubs and high hearts. Each one is ' +
+      'claimed the same way you just did it. Blue 4, Red 0.',
     expect: { event: 'claim', outcome: 'team0', turnAfter: 0, scoreAfter: [4, 0] },
   },
   {
@@ -350,11 +348,11 @@ export const SCRIPT: readonly Step[] = [
     act: 5,
     mode: 'beat',
     actions: [A(0, 1, '8S')],
-    title: 'Sometimes every legal ask is a bad one',
+    title: 'Sometimes every ask is a bad one',
     body:
-      'You still have the turn and must use it. You hold only three 8s, so Eights & Jokers is the ' +
-      'one half-suit you may ask into — and every card you are missing is with your partner Kofi, ' +
-      'whom you cannot ask. So you ask Ravi, knowing it will miss. That is a normal part of the game.',
+      'It is still your turn and you have to ask. You hold only three 8s, so Eights & Jokers is ' +
+      'the one half-suit you can ask in. Every card you need is with your partner Kofi, and you ' +
+      'cannot ask him. So you ask Ravi and miss on purpose.',
     expect: { event: 'ask', hit: false, turnAfter: 1 },
   },
   {
@@ -367,11 +365,11 @@ export const SCRIPT: readonly Step[] = [
       { type: 'claim', seat: 1, halfSuit: 'HIGH-D', assignments: { '9D': 1, TD: 1, JD: 3, QD: 3, KD: 5, AD: 5 } as Record<Card, Seat> },
       { type: 'claim', seat: 1, halfSuit: 'HIGH-S', assignments: { '9S': 3, TS: 1, JS: 3, QS: 3, KS: 5, AS: 5 } as Record<Card, Seat> },
     ],
-    title: 'Red claims four in a row and levels it',
+    title: 'Red catches up',
     body:
-      'Ravi has been listening just as hard. Four claims, back to back, all twenty-four cards ' +
-      'placed correctly — and because a claim never ends your turn, he never has to stop. ' +
-      'Blue 4, Red 4. One half-suit left.',
+      'Ravi has been listening too. He claims four half-suits in a row and names all twenty-four ' +
+      'cards right. A claim never ends your turn, so he never has to stop. Blue 4, Red 4. One ' +
+      'half-suit left.',
     expect: { event: 'claim', outcome: 'team1', scoreAfter: [4, 4] },
   },
   {
@@ -379,11 +377,11 @@ export const SCRIPT: readonly Step[] = [
     act: 5,
     mode: 'beat',
     actions: [{ type: 'designate', seat: 1, to: 0 }],
-    title: 'Red has run out of cards entirely',
+    title: 'Red has run out of cards',
     body:
-      'Those claims used up every card Red was holding. When a whole team runs dry with ' +
-      'half-suits left, play stops and the side that still has cards must claim out the rest ' +
-      'alone, with no help from partners. It was Red’s turn, so Ravi picks who does it. He picks you.',
+      'Those claims used up every card Red had. When a whole team runs out with half-suits still ' +
+      'left, play stops. The team with cards must claim the rest alone, with no help from ' +
+      'partners. It was Red’s turn, so Ravi picks who does it. He picks you.',
     expect: { event: 'designate', turnAfter: 0, phaseAfter: 'endgame' },
   },
   {
@@ -391,33 +389,33 @@ export const SCRIPT: readonly Step[] = [
     act: 5,
     mode: 'beat',
     actions: [],
-    title: 'For the game — claim Eights & Jokers',
+    title: 'Claim this one to win',
     body:
-      '4–4, and the ninth half-suit decides it. You hold three of the six. The other three are ' +
-      'with Kofi, and again you have never seen them — but the table told you everything you need.',
+      'The score is 4–4, so this half-suit is the tiebreaker. You hold three of the six cards. ' +
+      'Kofi holds the other three. You have never seen them, but you can work them out.',
     checkpoint: {
       kind: 'claim',
-      brief: 'The four 8s, the red joker and the black joker. Place every one.',
+      brief: 'The four 8s, the red joker and the black joker.',
       prompt: 'Who holds each card of Eights & Jokers?',
       halfSuit: 'EIGHTS',
       deductions: [
-        { card: '8C', because: 'Yours since the deal.' },
-        { card: '8D', because: 'Yours since the deal.' },
-        { card: '8H', because: 'You took it off Ravi with your second ask.' },
+        { card: '8C', because: 'In your hand from the start.' },
+        { card: '8D', because: 'In your hand from the start.' },
+        { card: '8H', because: 'You took it from Ravi with your second ask.' },
         {
           card: '8S',
           because:
-            'Kofi asked for the jokers, so he already held one of these six. You have the other three 8s and both jokers are placed, so his was the 8 of spades.',
+            'Kofi asked for the jokers, so he held a card of this half-suit. You hold the other three 8s and both jokers are placed, so his card is the 8 of spades.',
         },
-        { card: 'RJ', because: 'Kofi took the red joker off Sam, in the open.' },
-        { card: 'BJ', because: 'Kofi took the black joker on the very next ask.' },
+        { card: 'RJ', because: 'Kofi took the red joker from Sam, in front of everyone.' },
+        { card: 'BJ', because: 'Kofi took the black joker on his next ask.' },
       ],
       whyWrong:
-        'Careful — this one is for the game. Misplace a card and the half-suit voids: 4–4, and ' +
-        'the whole thing ends in the draw this deck exists to prevent.',
+        'Be careful. This one wins the game. Put a card in the wrong hand and the half-suit is ' +
+        'void. The score stays 4–4 and the game ends in a draw.',
       reveal:
-        'All six correct. Blue takes Eights & Jokers, 5–4, game over. The ninth half-suit decided ' +
-        'it, which is exactly what it is there for.',
+        'All six right. Blue takes Eights & Jokers and wins 5–4. The ninth half-suit broke the ' +
+        'tie, which is exactly what it is for.',
     },
     expect: { event: 'claim', outcome: 'team0', phaseAfter: 'finished', scoreAfter: [5, 4] },
   },
@@ -426,11 +424,11 @@ export const SCRIPT: readonly Step[] = [
     act: 5,
     mode: 'still',
     actions: [],
-    title: 'Why the 8s and jokers are in the deck',
+    title: 'Why the 8s and jokers are in',
     body:
-      'The standard game throws the 8s away and plays eight half-suits, where 4–4 draws are ' +
-      'common and deflating. Adding both jokers makes a ninth and makes the total odd, so a game ' +
-      'where every half-suit is won must end 5–4. Only a void can still produce a draw.',
+      'The standard game removes the four 8s and plays eight half-suits, so 4–4 draws are ' +
+      'common. Adding both jokers makes a ninth half-suit, so the total is odd. A 4–4 score ' +
+      'always gets broken. Only a void can still cause a draw.',
   },
 
   /* ------------------------------------------------------- act 6: reference --- */
@@ -441,9 +439,9 @@ export const SCRIPT: readonly Step[] = [
     actions: [],
     title: 'That is the whole game',
     body:
-      'Ask an opponent for one card from a half-suit you already hold. Hit and go again; miss and ' +
-      'the turn is theirs. Claim by naming where all six cards sit on your side. Five of nine ' +
-      'wins. Everything else is listening.',
+      'Ask an opponent for one card from a half-suit you hold. Hit and you go again. Miss and ' +
+      'the turn is theirs. Claim a half-suit by naming who holds all six cards. Five of nine ' +
+      'wins. The rest is listening.',
   },
 ]
 

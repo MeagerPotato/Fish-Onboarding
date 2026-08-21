@@ -87,10 +87,10 @@ Two figures are published, because one would be flattering rather than honest:
 
 | Reading speed | Total | Note |
 |---|---|---|
-| 250 wpm — short second-person copy read beside a picture | **9.8 min** | The typical learner |
-| 200 wpm — careful, comprehension-first reading | **11.2 min** | The conservative case |
+| 250 wpm — short second-person copy read beside a picture | **9.2 min** | The typical learner |
+| 200 wpm — careful, comprehension-first reading | **10.4 min** | The conservative case |
 
-Roughly **43% of the time is checkpoints** — the parts the learner does rather than reads.
+Roughly **45% of the time is checkpoints** — the parts the learner does rather than reads.
 That ratio is asserted in the tests, because it is the difference between a tutorial and a
 brochure.
 

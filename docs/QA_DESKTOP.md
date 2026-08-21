@@ -376,7 +376,7 @@ guide driven from step 1 to step 19. Every item is objectively pass/fail. Items 
 34. A complete run issues **zero** requests to any host other than the app's own origin, and no
     request returns 4xx or 5xx. Zero webfont files unless one subset face is deliberately added
     within the byte budget; zero raster images. *(regression — 100% same-origin today)*
-35. After any CSS change, `npm run verify` still passes: typecheck, lint, 81/81 tests.
+35. After any CSS change, `npm run verify` still passes: typecheck, lint, and the full test suite (82 at time of writing).
 36. `nav-restart` returns the guide to step 1 with every checkpoint unanswered and re-answerable.
     *(regression — fixed in D1; the check is that step 4's options are `data-state="idle"` and
     enabled after a restart)*

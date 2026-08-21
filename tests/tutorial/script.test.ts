@@ -269,10 +269,47 @@ describe('curriculum constraints', () => {
   })
 
   it('teaches all three claim outcomes and both ask outcomes somewhere in the copy', () => {
+    // Concepts, not phrasing. The copy is deliberately plain and gets reworded; what must
+    // never drop out is the idea itself.
     const all = SCRIPT.map((s) => `${s.title} ${s.body}`).join(' ').toLowerCase()
-    for (const idea of ['void', 'the other team scores', 'keeps the turn', 'hands the turn']) {
-      expect(all, `the guide never explains "${idea}"`).toContain(idea)
+    const ideas: [string, RegExp][] = [
+      ['a claim can be voided', /\bvoid\b/],
+      ['the opposing team can score your claim', /other team scores/],
+      ['a hit lets you continue', /you go again|still your turn/],
+      ['a miss passes the turn', /now it is her turn|the turn is theirs|hand the turn/],
+      ['you may never ask a teammate', /never a teammate|never ask (a|an|your|her|him)/],
+      ['five of nine wins', /five points wins|five of nine/],
+    ]
+    for (const [idea, pattern] of ideas) {
+      expect(pattern.test(all), `the guide never explains: ${idea}`).toBe(true)
     }
+  })
+
+  /**
+   * The guide is read at a table, by someone who has never played, often on a phone and
+   * usually while other people are talking. Long sentences are the first thing to fail in
+   * those conditions, so sentence length is a product requirement rather than a style note.
+   */
+  it('keeps the language plain enough to read at a noisy table', () => {
+    const sentencesOf = (text: string) =>
+      text
+        .split(/(?<=[.!?])\s+/)
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((x) => x.split(/\s+/).filter(Boolean).length)
+
+    for (const s of SCRIPT) {
+      const lengths = sentencesOf(s.body)
+      const longest = Math.max(...lengths)
+      const average = lengths.reduce((a, b) => a + b, 0) / lengths.length
+      expect(longest, `"${s.id}" has a ${longest}-word sentence`).toBeLessThanOrEqual(26)
+      expect(average, `"${s.id}" averages ${average.toFixed(1)} words per sentence`).toBeLessThanOrEqual(15)
+    }
+
+    const everything = SCRIPT.map((s) => s.body).join(' ')
+    const all = sentencesOf(everything)
+    const overall = all.reduce((a, b) => a + b, 0) / all.length
+    expect(overall, `the guide averages ${overall.toFixed(1)} words per sentence`).toBeLessThanOrEqual(12)
   })
 })
 

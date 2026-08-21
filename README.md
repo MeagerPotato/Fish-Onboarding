@@ -2,7 +2,7 @@
 
 **Learn Literature (Canadian Fish) in about ten minutes.** An interactive guide for complete
 beginners — a scripted teaching game with four points where you have to make the move
-yourself.
+yourself. Written in deliberately plain language: sentences average nine words.
 
 Built for the club's nine half-suit variant: 54 cards, and the four 8s plus both jokers form a
 ninth, tiebreaking half-suit.
@@ -16,7 +16,7 @@ completely self-contained — no accounts, no backend, no network requests after
 
 | | |
 |---|---|
-| Rules engine | Done — 54 cards, 9 half-suits, 81 tests including 300 fuzzed games |
+| Rules engine | Done — 54 cards, 9 half-suits, 82 tests including 300 fuzzed games |
 | Teaching script | Done — 19 steps, 4 checkpoints, verified against the engine |
 | Components | Done — headless, semantic, accessible, **deliberately unstyled** |
 | Visual design | **Not started.** See [CODEX_HANDOFF.md](CODEX_HANDOFF.md) |
@@ -60,7 +60,7 @@ lib/engine/           Pure rules engine. No framework, platform or DOM imports.
 src/tutorial/         The teaching script, the hand-authored deal, view models, state machine.
 src/components/       Headless React components + their empty stylesheets.
 docs/                 Design study, mobile spec, desktop QA.
-tests/                81 tests. The specification, in executable form.
+tests/                82 tests. The specification, in executable form.
 ```
 
 **Nothing in the guide is hand-waved.** Every step replays a real `GameAction` through the
