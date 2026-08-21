@@ -38,8 +38,15 @@
 
   position: relative;
   display: grid;
+  /*
+   * The header track is content-sized, not fixed. A fixed 48px silently clipped all nine
+   * half-suit chips out of existence. The rail's height does not change between steps — a
+   * chip is the same size open or won — so an auto track cannot cause the between-step
+   * jitter that the fixed table and hand zones exist to prevent. The minimum keeps the
+   * spec'd 48px floor.
+   */
   grid-template-rows:
-    calc(var(--dg-zone-header) + var(--safe-t))
+    minmax(calc(var(--dg-zone-header) + var(--safe-t)), auto)
     minmax(0, 1fr)
     calc(var(--dg-zone-nav) + var(--safe-b));
   block-size: var(--app-h);

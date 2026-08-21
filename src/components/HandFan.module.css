@@ -9,27 +9,127 @@
  *   [data-highlighted="true"]
  *
  * See CODEX_HANDOFF.md for the full contract.
+ *
+ * ---------------------------------------------------------------------------
+ * The hardest fixed box in the layout: 132px (`--dg-zone-hand`) must hold up to
+ * 9 cards in as many as 5 half-suits at 320px, with ranks readable at arm's
+ * length (docs/MOBILE_SPEC.md §4.5, §7.1).
+ *
+ * How it resolves. Vertically: 8+8 padding, a name band that wraps to two or
+ * three lines, a 4px gap, then the card row — 90px used of 132 at the 320px
+ * floor, so nothing is ever clipped even when "Eights & Jokers" takes three
+ * lines. Horizontally: card width is one custom property that steps with the
+ * viewport, and the name is capped at 40px so a one-card half-suit costs 40px
+ * rather than the 65px its full name would want. The worst real hand — 2+1+3+1+2
+ * across five half-suits — then lands at 295px inside 296px, with no scroll.
+ *
+ * Grouping is the lesson, not decoration: which half-suits you hold is exactly
+ * what makes an ask legal. Each group is bracketed by a ruled name and separated
+ * by twice the within-group gap. Neither cue depends on colour.
  */
 
-.cardSlot {
+.hand {
+  --dg-card-md: 27px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  block-size: 100%;
+  max-block-size: var(--dg-zone-hand);
+  padding-block: var(--dg-u1);
+  overflow: hidden;
 }
 
-.cards {
+/* Card width steps with the page padding AppShell sets at the same breakpoints. */
+@media (min-width: 360px) {
+  .hand {
+    --dg-card-md: 30px;
+  }
+}
+
+@media (min-width: 414px) {
+  .hand {
+    --dg-card-md: 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .hand {
+    --dg-card-md: 44px;
+  }
 }
 
 .empty {
+  font-size: var(--dg-lead);
+  color: var(--dg-muted);
+  text-align: center;
+}
+
+/*
+ * The one place a horizontal scroll is allowed. It is inside the hand, never on
+ * the page (docs/MOBILE_SPEC.md §11.3), and `overscroll-behavior` stops a flick
+ * chaining out to the shell behind it.
+ */
+.groups {
+  display: flex;
+  align-items: flex-end;
+  justify-content: safe center;
+  gap: var(--dg-u1);
+  min-block-size: 0;
+  padding-inline: var(--dg-s-hair);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
 
 .group {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--dg-u1);
 }
 
+/*
+ * The name is a bracket over its cards: a rule spanning the group's width. It
+ * wraps rather than truncates — the half-suit names are the vocabulary the
+ * learner is here to acquire, and "Eights & Jokers" is the one the whole guide
+ * turns on. Because the groups are bottom-aligned, every rule lands on the same
+ * line whether its name took one, two or three of them.
+ */
 .groupName {
+  max-inline-size: var(--dg-u10);
+  padding-block-end: calc(var(--dg-u1) / 2);
+  border-block-end: var(--dg-s-line) solid var(--dg-rule);
+  font-size: var(--dg-label);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--dg-muted);
+  transition:
+    color var(--dg-fast) var(--dg-ease),
+    border-color var(--dg-fast) var(--dg-ease);
 }
 
-.groups {
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--dg-u1) / 2);
 }
 
-.hand {
+.cardSlot {
+  display: flex;
+}
+
+/* The half-suit under discussion. Weight step on the rule plus a ring — both
+   visible with the colour removed. */
+.group[data-highlighted='true'] .groupName {
+  border-block-end-width: var(--dg-s-strong);
+  border-block-end-color: var(--dg-accent-line);
+  color: var(--dg-accent-ink);
+}
+
+.group[data-highlighted='true'] {
+  outline: var(--dg-s-hair) solid var(--dg-accent-line);
+  border-radius: var(--dg-r-sm);
 }
 
 /* Functional, not decorative: keeps the h2 that fixes the heading outline out of sight. */

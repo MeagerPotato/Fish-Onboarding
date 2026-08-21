@@ -267,6 +267,15 @@ body {
  * body colour means every component that says `color: var(--dg-ink)` prints black without
  * needing its own print rule.
  */
+/*
+ * @page is a global at-rule and cannot live in a CSS Module — it would be scoped away. It
+ * belongs here. 10mm keeps the reference card on one A4/Letter page; the cheat sheet was
+ * measured against Chrome's 0.4in default and clears it with room to spare either way.
+ */
+@page {
+  margin: 10mm;
+}
+
 @media print {
   :root {
     --dg-paper: #fff;

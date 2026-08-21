@@ -1,31 +1,199 @@
 /*
- * LogPanel — styling surface.
+ * LogPanel — the public record, and the only place the claim checkpoints can be solved from.
+ * Hit and miss is diagram D5 (docs/DIAGRAM_SYSTEM.md §4.5).
  *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * The height clamp is the load-bearing rule (CODEX_HANDOFF.md §6): the markup renders all 35
+ * entries and must keep doing so, so the *list* scrolls. Newest first means the newest entry
+ * is the first child and is therefore visible without scrolling; everything older is one
+ * scroll away. Nothing is ever hidden.
  *
- * Styling hooks available on these elements (set by the component, read by you):
- *   [data-kind="ask|claim|pass|designate|player_out|endgame|game_over"]
- *   [data-team="0|1"]  [data-hit="true|false"]  [data-outcome="team0|team1|void"]
- *   [data-order="newest-first|oldest-first"]
- *
- * See CODEX_HANDOFF.md for the full contract.
+ * Channels (§3.5.3 — colour never informs alone):
+ *   hit / miss      → glyph, border style (solid vs dashed), text weight and ink
+ *   who acted       → the bar hue plus the trailing corner radius; the sentence names them
+ *   awarded to      → claims take the winning team's bar and corners, not the claimer's
+ * The glyphs are generated content, so they are decorative only — every entry says
+ * "hands it over" / "no. The turn passes to…" / "the other team is awarded it" in words.
  */
 
-.cards {
+/* The zone around this already owns the page padding. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  inline-size: 100%;
+  padding-block: var(--dg-u1);
 }
 
-.empty {
-}
-
+/*
+ * The clamp, and the only reason the markup can keep rendering all 35 entries. `flex` lets
+ * a height-constrained zone shrink it further; the max stops it eating the seat ring when
+ * the zone is free to grow — on a phone the log shares a 200px band with the table, so it
+ * takes 112px of it and the rest of the history is one scroll away. svh, never vh
+ * (MOBILE_SPEC §2.2).
+ *
+ * This is sound only while `[data-order]` is newest-first, which puts the newest entry in
+ * the first child where no scrolling can hide it. Oldest-first would need the scroller to
+ * start at the bottom, and CSS cannot set a scroll position.
+ */
 .entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dg-u1);
+  flex: 1 1 auto;
+  min-block-size: 0;
+  max-block-size: min(24svh, 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
 }
 
 .entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--dg-u1) var(--dg-u2);
+  padding: var(--dg-u1) var(--dg-u2);
+  border-inline-start: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-sm);
+  background: var(--dg-paper-2);
+  color: var(--dg-muted);
+  font-size: var(--dg-label);
+  line-height: 1.35;
+  animation: entry var(--dg-fast) var(--dg-ease-out);
 }
 
-.panel {
+@keyframes entry {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A fixed-width gutter so every sentence starts on the same line, glyph or not. The colour
+   is inherited on purpose: the glyph is never darker or lighter than the words it marks. */
+.entry::before {
+  content: '·';
+  flex: none;
+  inline-size: var(--dg-u3);
+  font-weight: 700;
+  text-align: center;
 }
 
 .text {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+
+.cards {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--dg-u1);
+}
+
+/* -------------------------------------------------- who was acting ------ */
+
+.entry[data-team='0'] {
+  border-inline-start-color: var(--dg-blue);
+  border-start-end-radius: var(--dg-r-lg);
+  border-end-end-radius: var(--dg-r-lg);
+}
+
+.entry[data-team='1'] {
+  border-inline-start-color: var(--dg-red);
+}
+
+/* ----------------------------------------------------- hit and miss ----- */
+
+/* Hit: the loop glyph, a solid 2px bar, full ink. You go again. */
+.entry[data-hit='true'] {
+  border-inline-start-width: var(--dg-s-strong);
+  background: var(--dg-paper);
+  color: var(--dg-ink);
+  font-weight: 600;
+}
+
+.entry[data-hit='true']::before {
+  content: '↺';
+}
+
+/* Miss: the turn steps down and across. Dashed, throughout this file, means
+   "this went against whoever acted". */
+.entry[data-hit='false'] {
+  border-inline-start-style: dashed;
+}
+
+.entry[data-hit='false']::before {
+  content: '↳';
+}
+
+/* ------------------------------------------------- claims and the end --- */
+
+/*
+ * A claim moves the score, so it is the heaviest thing in the log, and it is drawn in the
+ * colours of the team it was *awarded* to — which is the point of the counter-intuitive
+ * case below.
+ */
+.entry[data-kind='claim'] {
+  border-inline-start-width: var(--dg-s-strong);
+  background: var(--dg-paper);
+  color: var(--dg-ink);
+  font-weight: 600;
+}
+
+.entry[data-kind='claim']::before {
+  content: '✓';
+}
+
+.entry[data-outcome='team0'] {
+  border-inline-start-color: var(--dg-blue);
+  border-start-end-radius: var(--dg-r-lg);
+  border-end-end-radius: var(--dg-r-lg);
+}
+
+.entry[data-outcome='team1'] {
+  border-inline-start-color: var(--dg-red);
+  border-start-end-radius: var(--dg-r-sm);
+  border-end-end-radius: var(--dg-r-sm);
+}
+
+/* You claimed and handed it to them. A loss you caused, not a neutral event. */
+.entry[data-team='0'][data-outcome='team1'],
+.entry[data-team='1'][data-outcome='team0'] {
+  border-inline-start-style: dashed;
+}
+
+.entry[data-team='0'][data-outcome='team1']::before,
+.entry[data-team='1'][data-outcome='team0']::before {
+  content: '✗';
+}
+
+.entry[data-kind='game_over'] {
+  border-inline-start-width: var(--dg-s-strong);
+  border-inline-start-color: var(--dg-ink);
+  background: var(--dg-paper);
+  color: var(--dg-ink);
+  font-weight: 700;
+}
+
+.empty {
+  color: var(--dg-soft);
+  font-size: var(--dg-label);
+}
+
+/*
+ * At 960px the shell goes two-column and the table zone stops being a 200px band, so the
+ * log stops being a ticker and becomes a column to read. Same breakpoint as the shell's,
+ * on purpose: below it the band is still 200px and a taller log would crowd out the table.
+ */
+@media (min-width: 60rem) {
+  .entry {
+    padding: var(--dg-u1) var(--dg-u3);
+    font-size: var(--dg-name);
+  }
+
+  .entries {
+    gap: var(--dg-u2);
+    max-block-size: min(46svh, 24rem);
+  }
 }

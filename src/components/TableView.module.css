@@ -12,28 +12,251 @@
  *   [data-spotlight="true"] the annotation is pointing here
  *
  * See CODEX_HANDOFF.md for the full contract.
+ *
+ * ---------------------------------------------------------------------------
+ * This is diagram D2 of docs/DIAGRAM_SYSTEM.md §4.2, not a decorated list.
+ *
+ * Four independent channels, so every one of them survives greyscale:
+ *   team     CORNER RADIUS — Blue 12px, Red 4px, alternating round the ring.
+ *            That alternation is the payload: it is what makes "my team, their
+ *            team, my team" legible at 320px, and it is why your teammates are
+ *            visibly the seats two steps away and can never be asked.
+ *   askable  a 1.5px ink halo — "you may ask this one, now".
+ *   active   a 3px accent ring, a caret above the token, and an opacity step
+ *            down on every other seat.
+ *   out      dashed edge + hatched ground + the word "out" + muted ink. Dimming
+ *            alone reads as a rendering artefact at arm's length
+ *            (docs/MOBILE_SPEC.md §4.4).
+ * Team hue rides on the token border only, where the floor is 3:1 — never on
+ * text, which would fall under 4.5:1 once the opacity step is applied.
+ *
+ * Geometry. 180px of the 200px table zone (20px is the log ticker). Six tokens
+ * of 56px on a 40%-wide, 44px-tall ring: the learner is pinned at 6 o'clock and
+ * seats proceed clockwise. Positions never reflow, including when a seat goes
+ * out — the ring is the learner's spatial anchor.
  */
 
-.count {
+/* AppShell splits the zone between the ring and the log ticker, so the ring
+   takes the slack it is given and never grows past the 180px the zone budgets
+   for it (QA_DESKTOP criterion 5: no zone changes height between steps). */
+.table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-block-size: 0;
 }
 
-.name {
+/*
+ * The ring is proportional, so it stays a ring at whatever height the ticker
+ * leaves it. `--ry` at 21% keeps 2·ry + 56px of token + 16px of caret clearance
+ * inside the box down to a 150px zone; the flank seats sit at 0.95·ry, which is
+ * what holds ≥8px between the two seats stacked on each side.
+ */
+.seats {
+  --rx: 40%;
+  --ry: 21%;
+  --seat: calc(var(--dg-node-min) + var(--dg-u3));
+
+  position: relative;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-block-size: 0;
+  max-inline-size: 30rem;
+  max-block-size: calc(var(--dg-zone-table) - var(--dg-u5));
+  margin-inline: auto;
+}
+
+/* The table itself: the one decorative ornament in the system. Textless, so it
+   costs nothing in the accessibility tree, and droppable without loss. */
+.seats::before {
+  content: '';
+  position: absolute;
+  inset-block: calc(50% - var(--ry));
+  inset-inline: calc(50% - var(--rx));
+  border: var(--dg-s-hair) dashed var(--dg-hair);
+  border-radius: var(--dg-r-md);
 }
 
 .seat {
+  --x: 0%;
+  --y: 0px;
+
+  position: absolute;
+  inset-block-start: calc(50% + var(--y));
+  inset-inline-start: calc(50% + var(--x));
+  inline-size: var(--seat);
+  block-size: var(--seat);
+  transform: translate(-50%, -50%);
+  transition: opacity var(--dg-fast) var(--dg-ease-out);
 }
 
-.seatBody {
+.seat[data-seat='0'] {
+  --y: var(--ry);
 }
 
+.seat[data-seat='1'] {
+  --x: calc(var(--rx) * -1);
+  --y: calc(var(--ry) * 0.95);
+}
+
+.seat[data-seat='2'] {
+  --x: calc(var(--rx) * -1);
+  --y: calc(var(--ry) * -0.95);
+}
+
+.seat[data-seat='3'] {
+  --y: calc(var(--ry) * -1);
+}
+
+.seat[data-seat='4'] {
+  --x: var(--rx);
+  --y: calc(var(--ry) * -0.95);
+}
+
+.seat[data-seat='5'] {
+  --x: var(--rx);
+  --y: calc(var(--ry) * 0.95);
+}
+
+/* Team is the token's silhouette. Hue is reinforcement, and rides the border. */
+.seat[data-team='0'] {
+  --team: var(--dg-blue);
+
+  border-radius: var(--dg-r-lg);
+}
+
+.seat[data-team='1'] {
+  --team: var(--dg-red);
+
+  border-radius: var(--dg-r-sm);
+}
+
+/* The token itself. The component renders one or the other, never both, and the
+   state rules below reach it as `.seat > *` so each one is written once. */
+.seatBody,
 .seatButton {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: calc(var(--dg-u1) / 2);
+  border: var(--dg-s-line) solid var(--team);
+  border-radius: inherit;
+  background: var(--dg-paper);
+  line-height: 1.15;
+  text-align: center;
+  user-select: none;
+  touch-action: manipulation;
 }
 
-.seats {
+.name {
+  font-size: var(--dg-label);
+  font-weight: 600;
+  color: var(--dg-ink);
 }
 
-.table {
+.count {
+  font-size: var(--dg-name);
+  font-weight: 700;
+  color: var(--dg-ink);
 }
 
+/*
+ * The team marker MOBILE_SPEC §4.4 requires. It is not in the markup, so it is
+ * generated here from `data-team` and it matches the accessible name, which
+ * already says "Blue team" / "Red team".
+ */
+.seat > *::after {
+  content: 'Red';
+  font-size: var(--dg-label);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--dg-muted);
+}
+
+.seat[data-team='0'] > *::after {
+  content: 'Blue';
+}
+
+/* The name already reads "You", and this span is aria-hidden, so showing it too
+   would say the same thing twice inside a 56px token. `[data-you]` carries the
+   distinction instead, with a heavier edge and a recessed ground. */
 .you {
+  display: none;
+}
+
+.seat[data-you='true'] > * {
+  border-width: var(--dg-s-strong);
+  background: var(--dg-paper-2);
+}
+
+/* A legal target right now. */
+.seat[data-askable='true'] > * {
+  outline: var(--dg-s-line) solid var(--dg-ink);
+  outline-offset: var(--dg-u1);
+}
+
+/* Out of cards: cannot ask, cannot be asked. Four channels, none of them hue. */
+.seat[data-out='true'] > * {
+  border-style: dashed;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      var(--dg-hair) 0 var(--dg-s-hair),
+      transparent var(--dg-s-hair) var(--dg-u1)
+    ),
+    var(--dg-paper-2);
+}
+
+.seat[data-out='true'] .name,
+.seat[data-out='true'] .count {
+  color: var(--dg-muted);
+}
+
+.seat[data-out='true'] > *::after {
+  content: 'out';
+}
+
+/* The annotation is pointing here. */
+.seat[data-spotlight='true'] > * {
+  border-width: var(--dg-s-strong);
+  border-color: var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+}
+
+/*
+ * The seat to act. Ring + caret + the accessible name's ", to act", and every
+ * other seat steps back to .82 — the reference site's dim-to-focus move, held
+ * above the level where 13px text would drop under 4.5:1.
+ */
+.seats:has([data-active='true']) .seat:not([data-active='true']) {
+  opacity: 0.82;
+}
+
+.seat[data-active='true'] > * {
+  outline: var(--dg-s-focus) solid var(--dg-accent-line);
+  outline-offset: calc(var(--dg-u1) / 2);
+}
+
+.seat[data-active='true'] > *::before {
+  content: '';
+  position: absolute;
+  inset-block-end: calc(100% + var(--dg-u2));
+  inline-size: var(--dg-u3);
+  block-size: var(--dg-u2);
+  background: var(--dg-accent-line);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.seatButton:focus-visible {
+  border-radius: inherit;
+}
+
+.seatButton:active {
+  transform: scale(var(--dg-press));
 }

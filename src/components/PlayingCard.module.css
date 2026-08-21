@@ -11,12 +11,148 @@
  *   NOTE: suit must stay distinguishable without colour. Do not remove the symbol.
  *
  * See CODEX_HANDOFF.md for the full contract.
+ *
+ * ---------------------------------------------------------------------------
+ * One number sizes a card: `--cw`, its width. Height, padding, rank and suit all
+ * derive from it, so a container retunes the whole face with a single custom
+ * property (`--dg-card-sm|md|lg`) instead of restating six declarations.
+ * Aspect is 1 : 1.4, the real ratio of a poker card.
+ *
+ * Suit is carried by the GLYPH. `--suit` only tints it, and every value below
+ * clears 4.5:1 on the card face in both schemes (docs/DIAGRAM_SYSTEM.md §3.3).
  */
 
 .card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--cw) * 0.04);
+  inline-size: var(--cw);
+  block-size: calc(var(--cw) * 1.4);
+  padding: calc(var(--cw) * 0.03);
+  border: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-sm);
+  background: var(--dg-paper);
+  color: var(--suit, var(--dg-ink));
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    border-color var(--dg-fast) var(--dg-ease),
+    background-color var(--dg-fast) var(--dg-ease);
 }
 
+/* sm 32×45 (chips, log, claim rows) · md 36×50 (the hand) · lg 54×76 (sheets). */
+.card[data-size='sm'] {
+  --cw: var(--dg-card-sm, 32px);
+}
+
+.card[data-size='md'] {
+  --cw: var(--dg-card-md, 36px);
+}
+
+.card[data-size='lg'] {
+  --cw: var(--dg-card-lg, 54px);
+}
+
+.card[data-suit='clubs'] {
+  --suit: var(--dg-suit-clubs);
+}
+
+.card[data-suit='diamonds'] {
+  --suit: var(--dg-suit-diamonds);
+}
+
+.card[data-suit='hearts'],
+.card[data-suit='joker-red'] {
+  --suit: var(--dg-suit-hearts);
+}
+
+.card[data-suit='spades'],
+.card[data-suit='joker-black'] {
+  --suit: var(--dg-suit-spades);
+}
+
+/*
+ * 16px is the hand-strip rank floor (docs/MOBILE_SPEC.md §7.1) and "10" is the
+ * widest glyph pair, so the floor is expressed as a token length rather than a
+ * ratio that could fall under it at the smallest card.
+ */
 .rank {
+  font-size: max(var(--dg-u4), calc(var(--cw) * 0.56));
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.suit {
+  font-size: max(var(--dg-u3), calc(var(--cw) * 0.44));
+}
+
+/*
+ * The two jokers. ★ vs ☾, RED vs BLK, and — the third channel — a filled plaque
+ * for black against an outlined one for red. All three survive greyscale, which
+ * they must: asking for the wrong joker wastes a turn (CODEX_HANDOFF.md §4.2).
+ */
+.card[data-joker='true'] .rank {
+  font-size: max(var(--dg-u5), calc(var(--cw) * 0.6));
+  font-weight: 400;
+}
+
+.card[data-joker='true'] .suit {
+  align-self: stretch;
+  border-radius: calc(var(--dg-u1) / 2);
+  font-size: max(var(--dg-label), calc(var(--cw) * 0.3));
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.card[data-suit='joker-black'] .suit {
+  background: var(--dg-suit-spades);
+  color: var(--dg-paper);
+}
+
+.card[data-suit='joker-red'] .suit {
+  box-shadow: inset 0 0 0 var(--dg-s-hair) currentcolor;
+}
+
+/* Not the subject right now. Recede by ink and ground, never by opacity: a
+   translucent rank is an unreadable rank at arm's length. */
+.card[data-muted='true'] {
+  --suit: var(--dg-muted);
+
+  border-color: var(--dg-hair);
+  background: var(--dg-paper-2);
+}
+
+/* The card the step is talking about: weight step + tint + halo, so it reads as
+   lifted without a shadow and without relying on the accent hue alone. */
+.card[data-highlighted='true'] {
+  border-width: var(--dg-s-strong);
+  border-color: var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+  outline: var(--dg-s-hair) solid var(--dg-accent-line);
+  outline-offset: var(--dg-s-hair);
+}
+
+/* Interactive faces. Every size is already ≥ 44px tall, so the touch floor is met
+   by the card itself and needs no invisible hit area. */
+button.card:active {
+  transform: scale(var(--dg-press));
+}
+
+button.card[aria-pressed='true'] {
+  border-width: var(--dg-s-strong);
+  border-color: var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+}
+
+button.card:disabled {
+  --suit: var(--dg-muted);
+
+  border-style: dashed;
 }
 
 .srOnly {
@@ -29,7 +165,4 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
-}
-
-.suit {
 }

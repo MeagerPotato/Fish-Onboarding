@@ -1,33 +1,227 @@
 /*
- * ScoreRail — styling surface.
+ * ScoreRail — this is diagram D1 (docs/DIAGRAM_SYSTEM.md §4.1).
  *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * Nine half-suits as a 3 x 3 grid, never a row of nine: the square block *is* the argument
+ * that nine is a friendly number, and it puts the ninth in the bottom-right terminal cell
+ * where the eye stops. Five wins (RULES.md §6), so a finished board can still show chips
+ * that were never played — that state is drawn as struck-off, not pending.
  *
- * Styling hooks available on these elements (set by the component, read by you):
- *   [data-state="open|team0|team1|void"]
- *   [data-ninth="true"]  the Eights & Jokers chip — the guide keeps pointing at it
- *   [data-spotlight="true"]
+ * Channels, in the order they carry meaning (§3.5.3 — colour never informs alone):
+ *   team   → badge letter B / R, badge shape (circle / square), trailing corner radius,
+ *            then colour
+ *   state  → border style: dashed = still open, solid = settled
+ *   ninth  → 2px accent frame + tint + terminal position + its own label text
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * The two permitted accents (§3.5.1) are spent on `[data-ninth]` and `.toWin`. Nothing else
+ * in this file may touch --dg-accent-*.
  */
 
-.chip {
-}
-
-.chipLabel {
-}
-
-.chips {
-}
-
+/*
+ * The zone around this owns the page padding, so the rail adds none of its own.
+ * `align-self: start` is deliberate — see the note at the foot of this file.
+ */
 .rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  align-self: start;
+  justify-content: space-between;
+  gap: var(--dg-u2) var(--dg-u5);
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding-block: var(--dg-u1);
 }
+
+/* ---------------------------------------------------------- the score --- */
 
 .score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--dg-u1) var(--dg-u2);
+  font-size: var(--dg-name);
+  font-weight: 600;
+}
+
+.team {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--dg-u1);
+  padding-inline-start: var(--dg-u2);
+  border-inline-start: var(--dg-s-strong) solid currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+.team b {
+  font-size: var(--dg-lead);
+}
+
+.team[data-team='0'] {
+  color: var(--dg-blue);
+}
+
+.team[data-team='1'] {
+  color: var(--dg-red);
 }
 
 .sep {
+  color: var(--dg-rule);
+}
+
+/* Accent 2 of 2. A live count from ScoreVM.toWin; it vanishes the moment the game is won,
+   which is also how the chips below know that play has stopped. */
+.toWin {
+  padding: 0 var(--dg-u2);
+  border: var(--dg-s-line) solid var(--dg-accent-line);
+  border-radius: var(--dg-r-pill);
+  background: var(--dg-accent-tint);
+  color: var(--dg-accent-ink);
+  font-size: var(--dg-label);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------- the nine half-suits --- */
+
+/*
+ * Nine chips, laid out two ways.
+ *
+ * DIAGRAM_SYSTEM D1 argues for a 3x3 grid, because the grid IS the argument that nine is a
+ * comprehensible number. That is right — but it needs 146px of header, and a 650px phone
+ * cannot spare it without starving the teaching copy. So below 960px the nine become a
+ * single row of compact chips, which keeps the running state visible at a fraction of the
+ * height; the 3x3 returns on desktop, and the printable cheat sheet renders it at full size
+ * where the argument actually has room to land.
+ */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-auto-rows: minmax(var(--dg-u6), auto);
+  gap: 3px;
+  inline-size: 100%;
+}
+
+@media (width >= 960px) {
+  .chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: var(--dg-u1);
+    flex: 1 1 20rem;
+    max-inline-size: 30rem;
+    inline-size: auto;
+  }
+}
+
+.chip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dg-u1);
+  min-block-size: var(--dg-u8);
+  /* No inline padding at the 320px floor: the widest label ("8s + Jokers", 66px at the 13px
+     type floor) plus its badge needs 86 of the 96px cell. The md band puts it back. */
+  padding-block: var(--dg-u1);
+  border: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-sm);
+  background: var(--dg-paper);
+  color: var(--dg-muted);
+  font-size: var(--dg-label);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  transition:
+    border-color var(--dg-fast) var(--dg-ease),
+    background-color var(--dg-fast) var(--dg-ease);
+}
+
+/* Dashed = nobody has taken it yet. */
+.chip[data-state='open'] {
+  border-style: dashed;
+  color: var(--dg-soft);
+  font-weight: 500;
+}
+
+/* Accent 1 of 2. Frame, tint and the bottom-right corner each say "different in kind"
+   on their own; the label already reads "8s + Jokers". Ordered after `open` so an
+   unclaimed ninth keeps the accent, and before the team states so a won one does not. */
+.chip[data-ninth] {
+  border-color: var(--dg-accent-line);
+  border-width: var(--dg-s-strong);
+  background: var(--dg-accent-tint);
+  color: var(--dg-accent-ink);
+}
+
+.chip[data-state='team0'],
+.chip[data-state='team1'] {
+  background: var(--dg-paper-2);
+  border-inline-start-width: var(--dg-s-strong);
+}
+
+.chip[data-state='team0'] {
+  color: var(--dg-blue);
+  border-inline-start-color: var(--dg-blue);
+  border-start-end-radius: var(--dg-r-lg);
+  border-end-end-radius: var(--dg-r-lg);
+}
+
+.chip[data-state='team1'] {
+  color: var(--dg-red);
+  border-inline-start-color: var(--dg-red);
+}
+
+/*
+ * The team badge. Decorative by construction: every chip already carries
+ * "Low clubs: won by Blue" in .srOnly, so nothing here is the sole carrier. Letter first,
+ * then shape (circle vs square), then hue.
+ */
+.chip[data-state='team0']::before,
+.chip[data-state='team1']::before {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: var(--dg-u4);
+  block-size: var(--dg-u4);
+  border: var(--dg-s-line) solid currentColor;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.chip[data-state='team0']::before {
+  content: 'B';
+  border-radius: var(--dg-r-pill);
+}
+
+.chip[data-state='team1']::before {
+  content: 'R';
+  border-radius: var(--dg-r-sm);
+}
+
+/*
+ * Play stops at five, so the board can finish with half-suits nobody ever played.
+ * `.toWin` is rendered only while the game is live, so its absence is the tell.
+ * Struck off + a settled solid border: closed, not waiting.
+ */
+.rail:not(:has(.toWin)) .chip[data-state='open'] {
+  border-style: solid;
+  border-color: var(--dg-hair);
+  color: var(--dg-rule);
+}
+
+.rail:not(:has(.toWin)) .chip[data-state='open'] .chipLabel {
+  text-decoration: line-through;
+}
+
+/* The step is talking about this one. Ink, not accent — the accent budget is spent. */
+.chip[data-spotlight] {
+  border-color: var(--dg-ink);
+  border-width: var(--dg-s-strong);
+}
+
+.chipLabel {
+  min-inline-size: 0;
 }
 
 .srOnly {
@@ -42,8 +236,31 @@
   border: 0;
 }
 
-.team {
+/* One breakpoint, at the md band, where the cells stop being tight. */
+@media (min-width: 26rem) {
+  .chips {
+    gap: var(--dg-u2);
+  }
+
+  .chip {
+    padding-inline: var(--dg-u2);
+  }
 }
 
-.toWin {
-}
+/*
+ * A note for whoever owns AppShell.module.css, because it cannot be fixed from here.
+ *
+ * This component renders the score *and* all nine half-suits, but the shell gives the
+ * header a fixed `--dg-zone-header` (48px) track with `overflow: hidden`. Measured: the
+ * rail needs 120px at 1280 (score and grid side by side) and 145px at 320–375 (stacked),
+ * so two of the three chip rows are clipped away. Nothing in this file can widen its own
+ * band, and no amount of shrinking gets three rows of 13px type into 48px — 13px is the
+ * type floor (MOBILE_SPEC §7.1) and the grid is the whole point of D1 (DIAGRAM_SYSTEM
+ * §4.1). MOBILE_SPEC §4.3 assumes the nine live in a score *sheet* that this build does
+ * not have, which is where the two specs part company.
+ *
+ * Until that is resolved the rail is pinned to the top of its band with `align-self`, so
+ * the 48px that does show is the score line and the top edge of the grid rather than a
+ * slice through the middle of it. The fix is one line there — a `min-content`/`auto`
+ * header track, or a taller `--dg-zone-header` — not a smaller diagram here.
+ */

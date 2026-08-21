@@ -1,55 +1,432 @@
 /*
- * CheatSheet — styling surface.
+ * CheatSheet — the artefact people take to the table.
  *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * Three diagrams from docs/DIAGRAM_SYSTEM.md live in this one component:
+ *   §4.1  nine half-suits as a 3x3 grid — the grid IS the argument that nine is small,
+ *         and the odd one out lands bottom-right, where the eye stops.
+ *   §4.3  four gates as a CHAIN — a rule with numbered discs on it, so "four things"
+ *         reads as "you must get through four things".
+ *   §4.4  declare -> a 1->2 fork. Two outcomes. There is no void (RULES.md §4).
+ *         The losing branch is an arrow, not a bin: the half-suit crosses the table.
  *
- * Styling hooks available on these elements (set by the component, read by you):
- *   [data-half-suit=...]  [data-ninth="true"]
- *   [data-outcome="win|lose|void"]  [data-gate="opponent|half-suit|own-card|target-has-cards"]
- *   NOTE: must remain legible when printed.
+ * Exactly two accented elements, the §3.5 cap: gate 4 (pass it and the ask is legal) and
+ * the 9th half-suit (the tiebreaker). Nothing else on this sheet is accented.
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * Type floor here is 15px, not 13px — docs/MOBILE_SPEC.md §10.1 raises the cheat sheet's
+ * minimum to 14px because this gets screenshotted and read scaled down in a chat app.
+ *
+ * Nothing is hidden behind an interaction, and print is a target, not a fallback (§10.2).
  */
 
-.block {
-}
-
-.gates {
-}
-
-.halfSuit {
-}
-
-.halfSuitCards {
-}
-
-.halfSuitName {
-}
-
-.halfSuitRange {
-}
-
-.halfSuits {
-}
-
-.heading {
-}
-
-.lead {
-}
-
-.list {
-}
-
-.note {
-}
-
-.outcomes {
-}
-
 .sheet {
+  display: grid;
+  align-content: start;
+  gap: var(--dg-u6);
+  inline-size: 100%;
+  max-inline-size: var(--dg-content-max);
+  margin-inline: auto;
+  padding: var(--dg-u2);
+  color: var(--dg-ink);
+  background: var(--dg-paper);
 }
 
 .title {
+  font-size: var(--dg-display);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.block {
+  /* Each block sizes its own diagrams, so a fork opens when its column can hold one —
+     independent of the viewport. Neutralised for paper; see the print block. */
+  container-type: inline-size;
+  display: grid;
+  align-content: start;
+  gap: var(--dg-u2);
+  break-inside: avoid;
+}
+
+.heading {
+  padding-block-end: var(--dg-u1);
+  border-block-end: var(--dg-s-hair) solid var(--dg-hair);
+  font-size: var(--dg-name);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  text-transform: uppercase;
+  color: var(--dg-soft);
+}
+
+.lead {
+  font-size: var(--dg-lead);
+  color: var(--dg-muted);
+}
+
+.note {
+  padding-inline-start: var(--dg-u3);
+  border-inline-start: var(--dg-s-line) solid var(--dg-hair);
+  font-size: var(--dg-name);
+  color: var(--dg-muted);
+}
+
+/* ------------------------------------------------- plain rules, and D5 hit/miss --- */
+
+.list {
+  display: grid;
+  gap: var(--dg-u2);
+}
+
+/* Positioned markers, not grid cells: these items mix <strong> with bare text, and a grid
+   or flex container would split that into two boxes and hyphenate the sentence. */
+.list > li {
+  position: relative;
+  padding-inline-start: var(--dg-u5);
+  font-size: var(--dg-lead);
+}
+
+.list > li::before {
+  content: '•';
+  position: absolute;
+  inset-inline-start: 0;
+  color: var(--dg-soft);
+}
+
+/* §4.5 — a hit loops back to you, a miss steps across. Glyph first, colour second. */
+.list > li:has(strong)::before {
+  content: '↺';
+  font-weight: 700;
+  color: var(--dg-blue);
+}
+
+.list > li:has(strong):last-child::before {
+  content: '↳';
+  color: var(--dg-red);
+}
+
+/* --------------------------------------------- D3 §4.3 — the four gates, chained --- */
+
+.gates {
+  display: grid;
+  counter-reset: gate;
+}
+
+.gates > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  counter-increment: gate;
+  min-block-size: var(--dg-node-min);
+  padding: var(--dg-u1) 0 var(--dg-u1) var(--dg-u8);
+  font-size: var(--dg-lead);
+}
+
+/* The chain itself: one continuous rule, trimmed to the first and last disc. */
+.gates > li::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--dg-u3) - var(--dg-s-hair));
+  inline-size: var(--dg-s-strong);
+  background: var(--dg-rule);
+}
+
+.gates > li:first-child::after {
+  inset-block-start: 50%;
+}
+
+.gates > li:last-child::after {
+  inset-block-end: 50%;
+}
+
+.gates > li::before {
+  content: counter(gate);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: var(--dg-u6);
+  block-size: var(--dg-u6);
+  border: var(--dg-s-hair) solid var(--dg-rule);
+  border-radius: 50%;
+  background: var(--dg-paper);
+  font-size: var(--dg-name);
+  font-weight: 600;
+  color: var(--dg-muted);
+}
+
+/* Accent 1 of 2: clear the last gate and the ask is legal. Weight carries it in mono. */
+.gates > li[data-gate='target-has-cards']::before {
+  border: var(--dg-s-strong) solid var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+  color: var(--dg-accent-ink);
+}
+
+.gates > li[data-gate='target-has-cards']::after {
+  background: var(--dg-accent-line);
+}
+
+/* --------------------------------------------- D4 §4.4 — declare, and it forks in 2 --- */
+
+.outcomes {
+  position: relative;
+  display: grid;
+  gap: var(--dg-u2);
+  margin-block-start: var(--dg-u5);
+}
+
+/* One declaration goes in... */
+.outcomes::before {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(-1 * var(--dg-u5));
+  inset-inline-start: 50%;
+  block-size: var(--dg-u5);
+  border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
+}
+
+.outcomes > li {
+  position: relative;
+  padding: var(--dg-u3) var(--dg-u3) var(--dg-u3) var(--dg-u8);
+  border: var(--dg-s-hair) solid var(--dg-rule);
+  border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
+  border-radius: var(--dg-r-md);
+  font-size: var(--dg-lead);
+  break-inside: avoid;
+}
+
+.outcomes > li::before {
+  position: absolute;
+  inset-inline-start: var(--dg-u3);
+  inset-block-start: var(--dg-u3);
+  font-weight: 700;
+}
+
+.outcomes > li[data-outcome='win'] {
+  border-inline-start-color: var(--dg-blue);
+}
+
+.outcomes > li[data-outcome='win']::before {
+  content: '✓';
+  color: var(--dg-blue);
+}
+
+/* The arrow is the teaching: a wrong claim does not void the half-suit, it moves it. */
+.outcomes > li[data-outcome='lose'] {
+  border-inline-start-color: var(--dg-red);
+}
+
+.outcomes > li[data-outcome='lose']::before {
+  content: '→';
+  color: var(--dg-red);
+}
+
+/* ...and two come out. Side by side reads as a fork; stacked it reads as a list. */
+@container (min-width: 26rem) {
+  .outcomes {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--dg-u3);
+  }
+
+  .outcomes::before {
+    block-size: var(--dg-u2);
+  }
+
+  .outcomes::after {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(-1 * var(--dg-u3));
+    inset-inline: 25%;
+    block-size: var(--dg-u3);
+    border: var(--dg-s-strong) solid var(--dg-rule);
+    border-block-end: 0;
+    border-radius: var(--dg-r-md) var(--dg-r-md) 0 0;
+  }
+}
+
+/* ------------------------------------------- D1 §4.1 — nine half-suits, as a 3x3 --- */
+
+.halfSuits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dg-u1);
+}
+
+/*
+ * The tight frame is the default and the roomy one is the exception, because the tight
+ * case is the hard one: at 320px a cell is 91px, and every pixel spent on padding is a
+ * pixel the card faces do not get. Frames tighten; the faces never do.
+ */
+.halfSuit {
+  display: grid;
+  align-content: start;
+  gap: var(--dg-u1);
+  padding: var(--dg-u1);
+  border: var(--dg-s-hair) solid var(--dg-rule);
+  border-radius: var(--dg-r-md);
+  break-inside: avoid;
+}
+
+.halfSuitName,
+.halfSuitRange {
+  font-size: var(--dg-name);
+  line-height: 1.25;
+}
+
+.halfSuitName {
+  font-weight: 600;
+}
+
+.halfSuitRange {
+  color: var(--dg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Wraps rather than squeezes: the faces keep whatever size PlayingCard gives them, so
+   six read as 6, or 3+3, and can never push the page sideways at 320px. */
+.halfSuitCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--dg-u1) / 2);
+  margin-block-start: var(--dg-u1);
+}
+
+/* Accent 2 of 2: the ninth. Corner position, 2px border and a written tag each carry it. */
+.halfSuit[data-ninth='true'] {
+  border: var(--dg-s-strong) solid var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+}
+
+.halfSuit[data-ninth='true']::after {
+  content: '9th · breaks 4–4';
+  font-size: var(--dg-name);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  text-transform: uppercase;
+  color: var(--dg-accent-ink);
+}
+
+/* ------------------------------------------------------------------ wide screens --- */
+
+/*
+ * Two columns rather than one stranded measure. The reference matrix and the glossary
+ * always span, because the 3x3 needs the full width to keep the card faces readable.
+ *
+ * `screen and` is load-bearing, not habit: a print page box is 717px at A4 portrait and
+ * 1049px at A4 landscape, so this step would fire on one and not the other and the
+ * single-page fit would depend on orientation. Paper takes the base rules plus the print
+ * block, and nothing else.
+ */
+@media screen and (min-width: 768px) {
+  .sheet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: var(--dg-u4);
+  }
+
+  .title,
+  .sheet > [data-block] {
+    grid-column: 1 / -1;
+  }
+
+  .halfSuits {
+    gap: var(--dg-u2);
+  }
+
+  .halfSuit {
+    padding: var(--dg-u2);
+  }
+}
+
+/* ------------------------------------------------------------------------ print --- */
+
+/*
+ * docs/MOBILE_SPEC.md §10.2. Black on white, one page at A4 and at Letter, two columns.
+ *
+ * THE ONE SANCTIONED EXCEPTION TO THE TOKEN RULE, and it is spent in one place: the
+ * palette is redefined ON THIS SHEET instead of being restated colour by colour. The
+ * whole subtree — the card faces included — then paints black on white whatever scheme
+ * the machine is in, no dark fill reaches the paper, and a photocopy of a photocopy
+ * still carries every distinction, because none of them was ever a hue: the outcomes are
+ * told apart by ✓ / →, the ninth half-suit by a 2px edge and a written tag, the fourth
+ * gate by a 2px disc, and every suit by its glyph.
+ */
+@media print {
+  .sheet {
+    /* ink */
+    --dg-paper: #fff;
+    --dg-ink: #000;
+    --dg-muted: #000;
+    --dg-soft: #000;
+    --dg-rule: #000;
+    --dg-hair: #000;
+    --dg-accent-tint: transparent;
+    --dg-accent-line: #000;
+    --dg-accent-ink: #000;
+    --dg-blue: #000;
+    --dg-red: #000;
+    --dg-suit-clubs: #000;
+    --dg-suit-diamonds: #000;
+    --dg-suit-hearts: #000;
+    --dg-suit-spades: #000;
+
+    /* type, retuned for paper rather than for a screenshot read at arm's length */
+    --dg-display: 17pt;
+    --dg-lead: 10pt;
+    --dg-name: 9pt;
+    --dg-label: 8pt;
+
+    grid-template-columns: 1fr 1fr;
+    gap: var(--dg-u2);
+    max-inline-size: none;
+    padding: 0;
+    line-height: 1.35;
+    color: #000;
+    background: #fff;
+  }
+
+  .title,
+  .sheet > [data-block] {
+    grid-column: 1 / -1;
+  }
+
+  /*
+   * Set tighter than a screen throughout — that is what buys the single page.
+   *
+   * Layout containment also makes a box monolithic to the fragmenter, which would throw
+   * the whole 3x3 onto a page of its own; the cells guard themselves instead. Turning the
+   * container off settles the fork too: a 350px print column cannot hold two branches.
+   */
+  .block {
+    container-type: normal;
+    gap: var(--dg-u1);
+  }
+
+  .sheet > [data-block='half-suits'] {
+    break-inside: auto;
+  }
+
+  .gates > li {
+    min-block-size: 0;
+    padding-block: var(--dg-u1);
+  }
+
+  /*
+   * Two places where paper needs more than a palette swap.
+   *
+   * 1. The numbered disc is §1.7's opaque mask: without it the chain strikes through the
+   *    numeral. It is white, so it is the one load-bearing fill and it costs no ink.
+   * 2. The black joker's RED/BLK plaque is reversed out of a fill, and browsers do not
+   *    print fills by default — on paper it would vanish. Outline it instead, the way the
+   *    red joker already is, so ★ / ☾ and RED / BLK both survive a photocopier.
+   */
+  .gates > li::before {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .halfSuitCards [data-joker='true'] > span:last-child {
+    box-shadow: inset 0 0 0 var(--dg-s-hair) currentcolor;
+    color: #000;
+  }
 }
