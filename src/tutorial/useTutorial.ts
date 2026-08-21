@@ -84,15 +84,29 @@ interface Saved {
   at: number
 }
 
+/**
+ * Nothing here trusts the stored value. It is the only input to this app that the app did
+ * not write itself in this session — anything else on the origin, a shared browser profile,
+ * a half-finished write, or a curious learner with devtools open can put arbitrary JSON in
+ * it — and it is read on every single load. So a value this function accepts but the rest of
+ * the module cannot use is not a bad resume, it is a blank page that comes back every time
+ * the page is opened, until site data is cleared by hand.
+ *
+ * `typeof x === 'number'` is not enough for an array index: 5.5 and 1e999 both pass it and
+ * neither indexes FRAMES. The test that matters is "a whole number", hence Number.isInteger.
+ */
 function loadProgress(): number {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return 0
-    const saved = JSON.parse(raw) as Saved
-    if (typeof saved.stepIndex !== 'number' || typeof saved.at !== 'number') return 0
-    if (Date.now() - saved.at > RESUME_WINDOW_MS) return 0
-    if (saved.stepIndex < MIN_RESUMABLE_STEP) return 0
-    return Math.min(Math.max(saved.stepIndex, 0), STEP_COUNT - 1)
+    const parsed: unknown = JSON.parse(raw)
+    if (typeof parsed !== 'object' || parsed === null) return 0
+    const { stepIndex, at } = parsed as Partial<Saved>
+    if (typeof stepIndex !== 'number' || typeof at !== 'number') return 0
+    if (!Number.isInteger(stepIndex) || !Number.isFinite(at)) return 0
+    if (Date.now() - at > RESUME_WINDOW_MS) return 0
+    if (stepIndex < MIN_RESUMABLE_STEP) return 0
+    return Math.min(Math.max(stepIndex, 0), STEP_COUNT - 1)
   } catch {
     return 0
   }
@@ -106,7 +120,17 @@ function saveProgress(stepIndex: number): void {
   }
 }
 
-const clamp = (i: number) => Math.min(Math.max(i, 0), STEP_COUNT - 1)
+/**
+ * Every step index the hook ever holds passes through here, which makes this the one place
+ * that can guarantee what the rest of the module assumes: `FRAMES[stepIndex]` exists. Range
+ * is only half of that — a fractional or non-finite index is inside the range and still
+ * misses the array — so the whole-number coercion belongs here too, not only at the storage
+ * boundary. `startAt` is a public argument of `useTutorial`, so this holds for any caller.
+ */
+const clamp = (i: number) => {
+  const whole = Number.isFinite(i) ? Math.trunc(i) : 0
+  return Math.min(Math.max(whole, 0), STEP_COUNT - 1)
+}
 
 /**
  * Everything the learner has done on ONE step. Tagged with the step it belongs to so the
