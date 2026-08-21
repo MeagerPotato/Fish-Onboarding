@@ -1,6 +1,6 @@
 # QA_DESKTOP.md — desktop verification and acceptance criteria
 
-The desktop counterpart to `docs/MOBILE_SPEC.md` §11, referenced by `CODEX_HANDOFF.md` §7.7.
+The desktop counterpart to `docs/MOBILE_SPEC.md` §11, referenced by `DESIGN_BRIEF.md` §7.7.
 
 **Part 1** records what was tested against the running app and what it did.
 **Part 2** lists the defects found.
@@ -223,7 +223,7 @@ At the start of this pass the app rendered an empty `#root`. `GET
 W/"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"` — the ETag of a zero-byte body** — and the console showed
 `SyntaxError: The requested module '/src/tutorial/useTutorial.ts' does not provide an export
 named 'savedStartIndex'`. The file on disk was complete. A concurrent process was rewriting
-files in this worktree (`CODEX_HANDOFF.md`, `CURRICULUM.md` and `README.md` all reappeared
+files in this worktree (`DESIGN_BRIEF.md`, `CURRICULUM.md` and `README.md` all reappeared
 mid-session), and Vite had cached a transform read while one file was momentarily zero bytes.
 
 Cleared by touching the source file, which issues a fresh HMR timestamp. **If the app ever
@@ -238,7 +238,7 @@ app mounted. They did not recur in any clean load.
 ### D7 — Informational: `MOBILE_SPEC.md` says 26 steps; the app has 19
 
 `MOBILE_SPEC.md` §0 and §11 refer to "step 1 of 26" and "all 26 steps", and its URL contract
-specifies `/step/1 … /step/26`. The shipped script is 19 steps (`CODEX_HANDOFF.md` §1 agrees),
+specifies `/step/1 … /step/26`. The shipped script is 19 steps (`DESIGN_BRIEF.md` §1 agrees),
 and there is no router — the current step is not reflected in the URL at all. Neither file is
 editable from here; flagged so the numbers are not taken literally when the mobile criteria
 are worked through.
@@ -273,11 +273,11 @@ guide driven from step 1 to step 19. Every item is objectively pass/fail. Items 
 4. Same as 3 at **1024×768** (the supported floor), where the budget is 768px.
 5. Zone heights are **stable between steps**: for any two consecutive steps at 1280×800, the
    heights of the header, table, hand and nav zones each change by **0px**. Only
-   `[data-zone="annotation"]` may change height. (`CODEX_HANDOFF.md` §3, structural rule 1.)
+   `[data-zone="annotation"]` may change height. (`DESIGN_BRIEF.md` §3, structural rule 1.)
 6. At 1024×768 and above, on both claim checkpoints, all **six** `[data-testid="claim-rows"] >
    li` elements are simultaneously inside the viewport, together with `[data-testid="claim-submit"]`
    and `[data-testid="claim-progress"]`. No row is reachable only by scrolling, and the sheet
-   contains no internal scroll container that can hide a row. (`CODEX_HANDOFF.md` §3,
+   contains no internal scroll container that can hide a row. (`DESIGN_BRIEF.md` §3,
    structural rule 2.) Today the block is 406px tall and ends 362px below the fold.
 7. On both ask checkpoints at 1024×768 and above, all four `button[data-testid^="ask-option-"]`
    are simultaneously inside the viewport along with `[data-testid="nav-next"]`.
@@ -312,7 +312,7 @@ guide driven from step 1 to step 19. Every item is objectively pass/fail. Items 
     all 19 steps. No `text-overflow: ellipsis`, no `-webkit-line-clamp` on
     `[data-testid="step-body"]`.
 17. Every card face keeps a rank glyph **and** a suit glyph at every size used on desktop; the
-    two jokers stay distinguishable from each other without colour. (`CODEX_HANDOFF.md` §4.1–2.)
+    two jokers stay distinguishable from each other without colour. (`DESIGN_BRIEF.md` §4.1–2.)
 18. On the final step, `[data-testid="cheat-sheet"]` renders all nine half-suits and all 54
     card faces, and every one of its six sections is reachable by scrolling that panel.
     *(regression — 54 cards today)*
@@ -328,13 +328,13 @@ guide driven from step 1 to step 19. Every item is objectively pass/fail. Items 
 21. Clicking a `claim-*-seat-*` label anywhere in its box selects that seat's radio — the
     whole label is the target, not just the dot. *(regression — label clicks work today)*
 22. Every control is at least **44×44px** with at least 8px between adjacent ones, at all four
-    desktop viewports. (`CODEX_HANDOFF.md` §4.3; `index.css` already sets the floor — do not
+    desktop viewports. (`DESIGN_BRIEF.md` §4.3; `index.css` already sets the floor — do not
     override `min-block-size`/`min-inline-size` on `button` below it.)
 23. `[data-testid="nav-next"]` is visibly distinguishable in its disabled state, and that
     difference is not carried by colour alone.
 24. The progress readout survives styling: `[data-testid="progress"]` stays `aria-hidden`, and
     its fill is driven by an inline `inline-size` percentage that CSS must not override (see
-    `CODEX_HANDOFF.md` §6).
+    `DESIGN_BRIEF.md` §6).
 
 ### Interaction — keyboard and assistive tech
 
@@ -357,7 +357,7 @@ guide driven from step 1 to step 19. Every item is objectively pass/fail. Items 
     adjacent background, at least 2px thick, visible in both light and dark schemes, and
     visible on the radio inputs specifically — `[data-testid^="claim-"] input[type=radio]` must
     never be `opacity: 0` or `appearance: none` without a replacement indicator on the label.
-    (`CODEX_HANDOFF.md` §4.6.) No rule anywhere sets `outline: none` without a replacement.
+    (`DESIGN_BRIEF.md` §4.6.) No rule anywhere sets `outline: none` without a replacement.
 30. **Keyboard-only completion, verified by hand with no mouse:** from step 1, reach step 19
     and solve all four checkpoints using only Tab / Shift-Tab, arrow keys and Enter/Space.
     Specifically: arrow keys move and select within each `claim-<CARD>` radio group; Space or

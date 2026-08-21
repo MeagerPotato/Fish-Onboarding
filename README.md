@@ -19,7 +19,7 @@ completely self-contained — no accounts, no backend, no network requests after
 | Rules engine | Done — 54 cards, 9 half-suits, 82 tests including 300 fuzzed games |
 | Teaching script | Done — 19 steps, 4 checkpoints, verified against the engine |
 | Components | Done — headless, semantic, accessible, **deliberately unstyled** |
-| Visual design | **Not started.** See [CODEX_HANDOFF.md](CODEX_HANDOFF.md) |
+| Visual design | **Not started.** See [DESIGN_BRIEF.md](DESIGN_BRIEF.md) |
 
 Every `*.module.css` is a generated list of empty class rules waiting for the designer. The app
 runs and is fully usable; it just has no styling yet.
@@ -54,7 +54,7 @@ can be written against reality rather than hope.
 ```
 RULES.md              The pinned rules. Single source of truth for engine and copy alike.
 CURRICULUM.md         What the guide teaches, in what order, and where the ten minutes go.
-CODEX_HANDOFF.md      The design brief: what is yours, what is not, what "done" means.
+DESIGN_BRIEF.md      The design brief: what is yours, what is not, what "done" means.
 
 lib/engine/           Pure rules engine. No framework, platform or DOM imports.
 src/tutorial/         The teaching script, the hand-authored deal, view models, state machine.

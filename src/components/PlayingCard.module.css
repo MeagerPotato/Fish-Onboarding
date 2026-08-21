@@ -10,7 +10,7 @@
  *   [data-joker="true"]  [data-muted="true"]  [data-highlighted="true"]
  *   NOTE: suit must stay distinguishable without colour. Do not remove the symbol.
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * See DESIGN_BRIEF.md for the full contract.
  *
  * ---------------------------------------------------------------------------
  * One number sizes a card: `--cw`, its width. Height, padding, rank and suit all
@@ -94,7 +94,7 @@
 /*
  * The two jokers. ★ vs ☾, RED vs BLK, and — the third channel — a filled plaque
  * for black against an outlined one for red. All three survive greyscale, which
- * they must: asking for the wrong joker wastes a turn (CODEX_HANDOFF.md §4.2).
+ * they must: asking for the wrong joker wastes a turn (DESIGN_BRIEF.md §4.2).
  */
 .card[data-joker='true'] .rank {
   font-size: max(var(--dg-u5), calc(var(--cw) * 0.6));

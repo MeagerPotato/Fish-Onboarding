@@ -1,7 +1,13 @@
-# CODEX_HANDOFF.md — the design brief
+# DESIGN_BRIEF.md — the design contract
 
-Everything except the visual design is finished. This document is the contract: what exists,
-what is yours, what is not yours, and what "done" means.
+Originally written as a handoff to an outside designer; the visual design was subsequently
+implemented in this repo against it, by six agents working to the file-ownership split below.
+It is kept as the standing contract rather than a historical document: it still defines what
+may be changed, what may not, and what "done" means, and any future design work — human or
+agent — should be held to it.
+
+**Read §3 and §4 before changing anything.** The rules engine and the teaching script are
+test-locked, and the accessibility floor in §4 is correctness rather than taste.
 
 **Start here:** `npm install && npm run dev`, then read `docs/DESIGN_INSPIRATION.md` and
 `docs/MOBILE_SPEC.md`. Run `npm run verify` before you consider anything finished.

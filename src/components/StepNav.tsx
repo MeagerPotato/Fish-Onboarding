@@ -7,6 +7,7 @@
  * There is deliberately no swipe gesture (docs/MOBILE_SPEC.md §6): it collides with the iOS
  * back gesture and with the horizontally scrolling hand, and it advances by accident.
  */
+import type { CSSProperties } from 'react'
 import s from './StepNav.module.css'
 
 export interface StepNavProps {
@@ -47,7 +48,11 @@ export function StepNav({
           {stepIndex + 1} / {stepCount}
         </span>
         <span className={s.progressTrack}>
-          <span className={s.progressFill} style={{ inlineSize: `${Math.round(progress * 100)}%` }} />
+          {/*
+            A ratio, not a width. The fill scales on the compositor rather than relayouting,
+            which is the one change docs/MOTION_STACK.md asked for in this file.
+          */}
+          <span className={s.progressFill} style={{ '--progress': progress } as CSSProperties} />
         </span>
       </p>
       <span className={s.srOnly} aria-live="polite">

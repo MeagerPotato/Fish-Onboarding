@@ -2,12 +2,13 @@
  * StepNav — Back, progress, Next. One row, inside the 64px nav zone (MOBILE_SPEC §4.6).
  *
  * Styling hooks available on these elements (set by the component, read by you):
- *   progressFill uses an inline inline-size percentage — style the track, not the width
+ *   progressFill receives a --progress ratio (0..1) and scales on the compositor — style
+ *   the track, never the width
  *   [data-blocked="true"] on .next while a checkpoint is unanswered
  *
  * `nav-next` carries `aria-disabled`, never `disabled`, so it keeps its place in the tab
  * order and a keyboard user is never stranded. `.next:disabled` would therefore match
- * nothing; `[data-blocked='true']` is the state (CODEX_HANDOFF §4.7).
+ * nothing; `[data-blocked='true']` is the state (DESIGN_BRIEF §4.7).
  */
 
 .nav {
@@ -122,10 +123,17 @@
 .progressFill {
   position: absolute;
   inset-block: 0;
-  inset-inline-start: 0;
+  inset-inline: 0;
   border-radius: inherit;
   background: var(--dg-accent-line);
-  transition: inline-size var(--dg-slow) var(--dg-ease);
+  /*
+   * scaleX off a --progress ratio, so the fill animates entirely on the compositor. The
+   * previous inline-size transition was a defensible exception — 4px tall, out of flow, once
+   * per step — but a transform costs nothing at all, so the exception is no longer needed.
+   */
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+  transition: transform var(--dg-slow) var(--dg-ease);
 }
 
 .srOnly {

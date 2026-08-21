@@ -73,7 +73,7 @@ export default function App() {
             No limit. The claim checkpoints are only solvable by reading the log — cp4 turns
             on two joker asks that happened many steps earlier — so truncating it in JS makes
             the guide's central promise false. The log zone is scroll-clamped in CSS instead,
-            which keeps the whole history reachable. See CODEX_HANDOFF.md §6.
+            which keeps the whole history reachable. See DESIGN_BRIEF.md §6.
           */}
           <LogPanel entries={log} />
         </>

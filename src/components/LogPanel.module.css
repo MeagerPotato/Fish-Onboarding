@@ -2,7 +2,7 @@
  * LogPanel — the public record, and the only place the claim checkpoints can be solved from.
  * Hit and miss is diagram D5 (docs/DIAGRAM_SYSTEM.md §4.5).
  *
- * The height clamp is the load-bearing rule (CODEX_HANDOFF.md §6): the markup renders all 35
+ * The height clamp is the load-bearing rule (DESIGN_BRIEF.md §6): the markup renders all 35
  * entries and must keep doing so, so the *list* scrolls. Newest first means the newest entry
  * is the first child and is therefore visible without scrolling; everything older is one
  * scroll away. Nothing is ever hidden.

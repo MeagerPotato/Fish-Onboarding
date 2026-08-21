@@ -19,7 +19,7 @@
  * nothing. The blocked state is [data-blocked="true"]: it looks unavailable, keeps its place
  * in the tab order, keeps its focus ring, and leaves `.progress` visible beside it, because a
  * sighted learner wondering why the button looks dead deserves the same answer a screen
- * reader gets. CODEX_HANDOFF §4.7.
+ * reader gets. DESIGN_BRIEF §4.7.
  */
 
 .sheet {

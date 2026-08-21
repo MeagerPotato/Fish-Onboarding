@@ -46,7 +46,9 @@ undefined. Three.js is not in the bundle.**
 I verified this four ways: `document.querySelectorAll('canvas')` returns zero elements on every route;
 `HTMLCanvasElement.prototype.getContext` was monkey-patched and never called by site code; the network waterfall
 contains no 3D library and no `.glb`/`.gltf`/`.hdr`/`.ktx2`/`.basis` asset of any kind; and the total JavaScript
-payload — 74 KB compressed across *all* scripts including React and the router — is smaller than a minimal
+payload — measured over the wire at **158.1 KB of JS** (119.4 KB on the critical path) plus 46.1 KB
+of CSS; an earlier draft of this document said 74 KB and was wrong, corrected against a fresh
+capture on 2026-08-21 — is still smaller than a minimal
 Three.js build on its own.
 
 The stack is: **React 19 + React Router, bundled by Vite, content from Sanity CMS, hosted on Vercel.** The entire

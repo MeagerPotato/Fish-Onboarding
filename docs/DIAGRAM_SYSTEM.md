@@ -340,7 +340,7 @@ disagree, I have followed the token table and noted the measurement.)*
 
 # Part 2 — Where the system collides with this product
 
-Five constraints from `docs/MOBILE_SPEC.md` and `CODEX_HANDOFF.md` break the source system. Each
+Five constraints from `docs/MOBILE_SPEC.md` and `DESIGN_BRIEF.md` break the source system. Each
 forces a specific adaptation, and together they change the answer completely.
 
 ## 2.1 We may not put text in SVG
@@ -385,7 +385,7 @@ route that respects the `.tsx` freeze.
 
 ## 2.4 No `.tsx` may be edited
 
-`CODEX_HANDOFF.md` §2–3: styles, `data-*` hooks, `@media`, `@supports`, custom properties and
+`DESIGN_BRIEF.md` §2–3: styles, `data-*` hooks, `@media`, `@supports`, custom properties and
 pseudo-elements are ours; markup is not. Every class is pre-declared and must not be renamed, and no
 class may be added to a component.
 
@@ -556,7 +556,7 @@ primary channel** and colour the reinforcement. Do not let any diagram rely on s
 }
 ```
 
-**Zeroing the tokens is the reduced-motion mechanism** — `CODEX_HANDOFF.md` §4.5 and
+**Zeroing the tokens is the reduced-motion mechanism** — `DESIGN_BRIEF.md` §4.5 and
 `DESIGN_INSPIRATION.md` §11.14 both call for this rather than a second stylesheet. The global
 `!important` block already in `src/index.css` is the belt; this is the braces, and it means no
 individual diagram needs its own reduced-motion rule.
@@ -822,10 +822,10 @@ void outcome** — any incorrect declaration awards the half-suit to the opposin
 | `src/tutorial/script.ts:309, 415` | "now void", "the game ends in a draw" |
 | `src/tutorial/script.ts` — step `why-nine` | "Only a void can still cause a draw." |
 | `RULES.md` rows 15, 22–23 and §4, §6 | Void documented as a live outcome |
-| `CODEX_HANDOFF.md` §6 | "The void outcome … is the counter-intuitive rule the guide exists to teach" |
+| `DESIGN_BRIEF.md` §6 | "The void outcome … is the counter-intuitive rule the guide exists to teach" |
 | `ScoreRail` / `CheatSheet` hooks | `data-state="…\|void"`, `data-outcome="…\|void"` still declared |
 
-All of those files are off limits under `CODEX_HANDOFF.md` §3. **This is a content decision for the
+All of those files are off limits under `DESIGN_BRIEF.md` §3. **This is a content decision for the
 project owner, not something design should paper over.** Two things follow, and I recommend both:
 
 - **This spec describes two outcomes.** No diagram here depends on, or depicts, a void state.
@@ -882,7 +882,7 @@ Static. No transitions.
 - **Hit** — they hand the card over, and **you go again**.
 - **Miss** — the turn passes to **whoever you asked**.
 
-`CODEX_HANDOFF.md` §6 calls `[data-hit]` "the single most-read piece of information in the whole
+`DESIGN_BRIEF.md` §6 calls `[data-hit]` "the single most-read piece of information in the whole
 game". This diagram is really two things: a static explanation on the cheat sheet, and a per-entry
 treatment in the log that a learner reads thirty-five times.
 
@@ -906,7 +906,7 @@ In `LogPanel`, every entry carries the same two-channel encoding on `[data-hit]`
 
 Entries are `min-block-size: 44px` where tappable, `--dg-label` (13px) minimum, ≤48 characters
 (`MOBILE_SPEC.md` §4.8). The log zone is `overflow-y: auto` with the newest entry visible without
-scrolling and **no cap in the markup** — `CODEX_HANDOFF.md` §6 is explicit that truncating makes
+scrolling and **no cap in the markup** — `DESIGN_BRIEF.md` §6 is explicit that truncating makes
 checkpoint 4 unsolvable, because its evidence is two joker asks many steps earlier.
 
 If the loop is drawn rather than glyphed, it is the second permitted decorative ornament: a
@@ -980,7 +980,7 @@ for a phone held at arm's length in a lit room while other people talk.
 
 `soft` (`#7a8399`) and the measured 0.4-opacity micro-labels do not reach 4.5:1. `DESIGN_INSPIRATION.md`
 §7.2 records **two real contrast failures** on the reference site from exactly this habit, and
-`CODEX_HANDOFF.md` §4.8 says do not inherit them. **Our `soft` is `#6b665c` at 5.47:1**, and text
+`DESIGN_BRIEF.md` §4.8 says do not inherit them. **Our `soft` is `#6b665c` at 5.47:1**, and text
 opacity is never used to create a colour — every text colour is a token with a measured ratio.
 
 ### 5.5 Do not take `svg { min-width: 900px }`

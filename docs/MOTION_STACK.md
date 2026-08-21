@@ -264,7 +264,7 @@ stagger helpers, and FLIP. This product needs none of them:
 
 `motion/mini` at 3.2 KB is the only library I would not argue against on size. I still argue
 against it on need: it would add a runtime dependency, a wiring surface inside `.tsx` files that
-`CODEX_HANDOFF.md` §3 places off limits to the designer, and a second place where motion is
+`DESIGN_BRIEF.md` §3 places off limits to the designer, and a second place where motion is
 defined — for capability the platform now ships for free.
 
 ### 3.4 Native platform features — verified support, August 2026
@@ -352,7 +352,7 @@ That single fact removes the most Three.js-shaped requirement in the brief befor
 **This motion does not exist and should not be built.** There is no card at Kofi's seat to move —
 `MOBILE_SPEC.md` §4.4 deliberately renders opponents as counts, because six fanned hands do not fit
 on a 375 px screen and hidden information must stay hidden. Creating the card to fly would mean
-editing `TableView.tsx`, which `CODEX_HANDOFF.md` §3 places off limits.
+editing `TableView.tsx`, which `DESIGN_BRIEF.md` §3 places off limits.
 
 What actually changes on a hit: **one count decrements, another increments, and — only when the
 learner is involved — one `<li>` enters or leaves `HandFan`.**
@@ -384,7 +384,7 @@ Chrome-only today.
 
 **The void outcome** (`[data-outcome="void"]`) uses the *same* choreography in a neutral colour with
 **no** `--shrink`: the cards return rather than shrink away. Per `DESIGN_INSPIRATION.md` §13.4 and
-`CODEX_HANDOFF.md` §6, it must look like neither a win nor a loss. Do not shake, flash, or buzz.
+`DESIGN_BRIEF.md` §6, it must look like neither a win nor a loss. Do not shake, flash, or buzz.
 
 ### 4.3 "The active seat changing"
 
@@ -427,7 +427,7 @@ recreate what the platform does in one.
 Two different problems that look like one.
 
 - **The nine chips** — `[data-state]` flips. **Pure CSS**, as in §4.2. Add `[data-ninth]` its own
-  treatment; `CODEX_HANDOFF.md` §6 asks for the ninth half-suit to be visible as the thing that
+  treatment; `DESIGN_BRIEF.md` §6 asks for the ninth half-suit to be visible as the thing that
   breaks a 4–4, and the rail is where a learner should see it.
 - **The `StepNav` progress bar** — `progressFill` carries an **inline `inline-size` percentage**,
   and `MOBILE_SPEC.md` §8.2 forbids animating `width`/`inline-size`.
@@ -619,7 +619,7 @@ braces, add the CSS guard too (it costs ~90 bytes):
 ### 6.4 Where it has to be wired
 
 `withTransition` wraps the `setState` calls in `next()` and `back()` in
-`src/tutorial/useTutorial.ts` — a file `CODEX_HANDOFF.md` §3 places off limits. **This needs an
+`src/tutorial/useTutorial.ts` — a file `DESIGN_BRIEF.md` §3 places off limits. **This needs an
 owner decision, and it is the only code change the recommendation requires.** It is roughly four
 lines and changes no game logic, no state shape, and no test.
 
@@ -629,7 +629,7 @@ correct; it just loses the two most satisfying moments.
 
 ### 6.5 The acceptance criteria this must satisfy
 
-`MOBILE_SPEC.md` §11 items **42, 43, 44** and `CODEX_HANDOFF.md` §4.5. Specifically: with Reduce
+`MOBILE_SPEC.md` §11 items **42, 43, 44** and `DESIGN_BRIEF.md` §4.5. Specifically: with Reduce
 Motion on, sheets appear instantly, no card-deal animation, no pulse on the active seat, all 19
 steps and 4 checkpoints still completable, every state change still perceivable, and **zero
 scripted animation frames after 3 s idle**. Dropping the ambient pulse (§4.6) is what makes 44 pass
@@ -764,7 +764,7 @@ reference site does not even use it — so you would be going further than your 
 - **No shader compilation stall** in the first three seconds, which is the most fragile moment in
   the entire session.
 - **No idle GPU loop** eating battery for ten minutes at a table.
-- **The designer can do all of it in the `.module.css` files** that `CODEX_HANDOFF.md` §2 already
+- **The designer can do all of it in the `.module.css` files** that `DESIGN_BRIEF.md` §2 already
   hands them, without touching a single `.tsx` — with the one four-line exception in §6.4.
 
 ### 7.7 The one thing I want to flag as a real cost, not a rounding error
