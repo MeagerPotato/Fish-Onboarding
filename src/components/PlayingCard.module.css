@@ -1,0 +1,35 @@
+/*
+ * PlayingCard — styling surface.
+ *
+ * Every class this component uses is listed below, empty and in alphabetical order.
+ * Fill them in; do not rename them, and do not add class names to the .tsx.
+ *
+ * Styling hooks available on these elements (set by the component, read by you):
+ *   [data-suit="clubs|diamonds|hearts|spades|joker-red|joker-black"]
+ *   [data-size="sm|md|lg"]
+ *   [data-joker="true"]  [data-muted="true"]  [data-highlighted="true"]
+ *   NOTE: suit must stay distinguishable without colour. Do not remove the symbol.
+ *
+ * See CODEX_HANDOFF.md for the full contract.
+ */
+
+.card {
+}
+
+.rank {
+}
+
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.suit {
+}

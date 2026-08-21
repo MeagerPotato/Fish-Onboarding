@@ -1,0 +1,31 @@
+/*
+ * LogPanel — styling surface.
+ *
+ * Every class this component uses is listed below, empty and in alphabetical order.
+ * Fill them in; do not rename them, and do not add class names to the .tsx.
+ *
+ * Styling hooks available on these elements (set by the component, read by you):
+ *   [data-kind="ask|claim|pass|designate|player_out|endgame|game_over"]
+ *   [data-team="0|1"]  [data-hit="true|false"]  [data-outcome="team0|team1|void"]
+ *   [data-order="newest-first|oldest-first"]
+ *
+ * See CODEX_HANDOFF.md for the full contract.
+ */
+
+.cards {
+}
+
+.empty {
+}
+
+.entries {
+}
+
+.entry {
+}
+
+.panel {
+}
+
+.text {
+}

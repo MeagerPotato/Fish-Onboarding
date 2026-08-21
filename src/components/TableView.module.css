@@ -1,0 +1,39 @@
+/*
+ * TableView — styling surface.
+ *
+ * Every class this component uses is listed below, empty and in alphabetical order.
+ * Fill them in; do not rename them, and do not add class names to the .tsx.
+ *
+ * Styling hooks available on these elements (set by the component, read by you):
+ *   [data-seat="0..5"]  [data-team="0|1"]  [data-you="true"]
+ *   [data-active="true"]   the seat to act
+ *   [data-out="true"]      no cards left
+ *   [data-askable="true"]  a legal target right now
+ *   [data-spotlight="true"] the annotation is pointing here
+ *
+ * See CODEX_HANDOFF.md for the full contract.
+ */
+
+.count {
+}
+
+.name {
+}
+
+.seat {
+}
+
+.seatBody {
+}
+
+.seatButton {
+}
+
+.seats {
+}
+
+.table {
+}
+
+.you {
+}

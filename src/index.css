@@ -1,0 +1,73 @@
+/*
+ * Minimal reset and the design tokens Codex will fill in.
+ *
+ * This file is deliberately almost empty. It exists so the app boots and is legible, and so
+ * there is one obvious place for the design system to land. Everything here is expected to
+ * be replaced — see CODEX_HANDOFF.md.
+ *
+ * The two things that should SURVIVE a redesign are marked KEEP.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  /* KEEP: never disable pinch-zoom, and never cap it. docs/MOBILE_SPEC.md §2. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-block-size: 100svh;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  /* Codex: replace with real tokens. Explicit values so the page never borrows a host theme. */
+  color: #0e1a2b;
+  background: #f6f7f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #e8edf5;
+    background: #0e1a2b;
+  }
+}
+
+img,
+svg {
+  display: block;
+  max-inline-size: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  /* KEEP: 44px minimum touch target. docs/MOBILE_SPEC.md §6. */
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  cursor: pointer;
+}
+
+/* KEEP: motion is opt-out for everyone who asks. docs/MOBILE_SPEC.md §8. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

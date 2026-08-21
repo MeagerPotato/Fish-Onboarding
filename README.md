@@ -1,0 +1,101 @@
+# Fish Onboarding
+
+**Learn Literature (Canadian Fish) in about ten minutes.** An interactive guide for complete
+beginners — a scripted teaching game with four points where you have to make the move
+yourself.
+
+Built for the club's nine half-suit variant: 54 cards, and the four 8s plus both jokers form a
+ninth, tiebreaking half-suit.
+
+Most people will reach this by scanning a QR code at the table, so it is phone-first and
+completely self-contained — no accounts, no backend, no network requests after load.
+
+---
+
+## Status
+
+| | |
+|---|---|
+| Rules engine | Done — 54 cards, 9 half-suits, 81 tests including 300 fuzzed games |
+| Teaching script | Done — 19 steps, 4 checkpoints, verified against the engine |
+| Components | Done — headless, semantic, accessible, **deliberately unstyled** |
+| Visual design | **Not started.** See [CODEX_HANDOFF.md](CODEX_HANDOFF.md) |
+
+Every `*.module.css` is a generated list of empty class rules waiting for the designer. The app
+runs and is fully usable; it just has no styling yet.
+
+---
+
+## Develop
+
+```bash
+npm install
+npm run dev
+```
+
+```bash
+npm run verify
+```
+
+`verify` runs typecheck, lint, and the full test suite. It must pass before anything ships.
+
+```bash
+npm run script:trace
+```
+
+Prints the whole teaching game move by move — every hand, every event, the running score. This
+is the tool for editing the script: it shows what the engine will actually do, so a new step
+can be written against reality rather than hope.
+
+---
+
+## How it is put together
+
+```
+RULES.md              The pinned rules. Single source of truth for engine and copy alike.
+CURRICULUM.md         What the guide teaches, in what order, and where the ten minutes go.
+CODEX_HANDOFF.md      The design brief: what is yours, what is not, what "done" means.
+
+lib/engine/           Pure rules engine. No framework, platform or DOM imports.
+src/tutorial/         The teaching script, the hand-authored deal, view models, state machine.
+src/components/       Headless React components + their empty stylesheets.
+docs/                 Design study, mobile spec, desktop QA.
+tests/                81 tests. The specification, in executable form.
+```
+
+**Nothing in the guide is hand-waved.** Every step replays a real `GameAction` through the
+same pure reducer the rules live in, starting from a fixed 54-card deal. If a step's copy says
+"this hits and you keep the turn", the engine produced that hit and that turn — and the tests
+fail the build if it ever stops doing so.
+
+Every checkpoint is solvable by deduction from the public log alone. That constraint is why
+the deal is hand-authored rather than seeded: a checkpoint you can only guess at teaches
+guessing.
+
+---
+
+## Terminology
+
+A set of six collectable cards is a **half-suit**. Never a "book" — the guide uses one word so
+a beginner has one thing to remember, and a test enforces it. There is exactly one permitted
+mention of the synonym, in the glossary on the final reference card, so that a player who
+hears it at another table knows what is meant.
+
+---
+
+## The variant
+
+Nine half-suits, not the standard eight:
+
+| | |
+|---|---|
+| Deck | 52 + both jokers = **54** |
+| Deal | 6 players, **9 cards each** |
+| Half-suits | Low (2–7) and High (9–A) of each suit = 8, plus **Eights & Jokers** = 9 |
+| To win | 5 of 9 |
+
+Nine is odd on purpose. In the standard eight half-suit game a 4–4 draw is common and
+deflating; with nine, a game in which every half-suit is won cannot tie. Only a *voided*
+half-suit can still produce a draw — which is one more reason to claim carefully.
+
+Full rules, including claim resolution and the endgame, are in [RULES.md](RULES.md).

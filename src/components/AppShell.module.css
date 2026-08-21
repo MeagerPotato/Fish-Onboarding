@@ -1,0 +1,36 @@
+/*
+ * AppShell — styling surface.
+ *
+ * Every class this component uses is listed below, empty and in alphabetical order.
+ * Fill them in; do not rename them, and do not add class names to the .tsx.
+ *
+ * Styling hooks available on these elements (set by the component, read by you):
+ *   [data-zone="header|table|annotation|hand|nav|overlay"]
+ *   NOTE: only the annotation zone may flex. See the file header.
+ *
+ * See CODEX_HANDOFF.md for the full contract.
+ */
+
+.annotation {
+}
+
+.hand {
+}
+
+.header {
+}
+
+.main {
+}
+
+.nav {
+}
+
+.overlay {
+}
+
+.shell {
+}
+
+.table {
+}
