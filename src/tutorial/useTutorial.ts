@@ -14,6 +14,11 @@
  * `isBlocked` would be stale for the second tap — which would let a double-tap skip straight
  * past an unanswered checkpoint. Every navigation therefore uses a functional update and
  * consults `solvedRef`, which is mutated synchronously the moment a checkpoint is solved.
+ *
+ * Progress is also in the URL, as a fragment — see `hashStepIndex`. The fragment is an input
+ * channel (deep links, Back, Forward) and a mirror of the step, never the source of truth:
+ * the source of truth stays this hook's `stepIndex`, so the functional updates above keep
+ * working exactly as they did.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Card, GameState, Seat } from '../../lib/engine/index.ts'
@@ -133,6 +138,56 @@ const clamp = (i: number) => {
 }
 
 /**
+ * `#step-12` — the fragment, counted from 1.
+ *
+ * From 1 because that is the number the learner is looking at while they copy the link
+ * ("Step 12 of 19"); a link whose number disagrees with the screen is a link people
+ * mis-quote across a table. A bare fragment and not `#/step/12`, because nothing in this app
+ * is a path: `vercel.json` rewrites every path to `index.html` already, and a fragment shaped
+ * like a path invites the guess that the server knows about it. A fragment rather than a real
+ * path (MOBILE_SPEC §1.4) because a fragment costs no server configuration and no router — it
+ * survives being moved to a host with no SPA rewrite, and it never turns a reload into a 404
+ * at a club table.
+ */
+const HASH_PREFIX = '#step-'
+
+const hashFor = (index: number) => HASH_PREFIX + (index + 1)
+
+/**
+ * The URL is the second input this app did not write itself, and the more exposed of the two:
+ * a fragment is typed, forwarded, truncated by chat clients, and appended to by trackers. So
+ * it gets the same suspicion as `loadProgress` and for the same reason — a value accepted here
+ * but unusable by the rest of the module is `FRAMES[undefined]`, a blank page that survives
+ * every reload because it is in the link.
+ *
+ * `Number()` is not the test. `'5.5'`, `'1e999'`, `'0x10'`, `'-1'`, `' 12 '` and `''` all pass
+ * through it and none of them index `FRAMES`. Digits-only is the test that matches what this
+ * function claims to read, and `\d` in a JS pattern is ASCII-only, so unicode digits are out
+ * as well. The length check runs before the slice so a megabyte-long fragment costs one
+ * comparison rather than a copy.
+ *
+ * Returns `null` for "the URL names no step" — the one case where the saved position may be
+ * resumed. Anything present but unusable returns step 1 instead: it is an explicit instruction
+ * the app could not honour, and restoring an unrelated saved position under it would answer a
+ * question nobody asked.
+ */
+export function hashStepIndex(): number | null {
+  try {
+    const raw = location.hash
+    // '' is "no fragment". A bare '#' reports '' too, so it resumes rather than resetting.
+    if (!raw) return null
+    if (raw.length > 16 || !raw.startsWith(HASH_PREFIX)) return 0
+    const digits = raw.slice(HASH_PREFIX.length)
+    if (!/^\d{1,3}$/.test(digits)) return 0
+    const n = Number(digits)
+    return n >= 1 && n <= STEP_COUNT ? n - 1 : 0
+  } catch {
+    // No `location` at all — a non-DOM environment. Behave as if the URL said nothing.
+    return null
+  }
+}
+
+/**
  * Everything the learner has done on ONE step. Tagged with the step it belongs to so the
  * current values can be derived during render instead of synced by an effect — navigating
  * away and back therefore needs no cleanup, and there is no frame where the previous step's
@@ -167,13 +222,23 @@ function workingFor(index: number, solvedSet: ReadonlySet<number>): Working {
 }
 
 
+/**
+ * `startAt` is where to begin when the URL does not say. A step named in the fragment beats
+ * it — someone opening a shared link expects that link's step, not the position this browser
+ * happened to save — which is why the precedence lives here rather than in the caller:
+ * `savedStartIndex()` still means exactly "the saved position", so a caller can keep asking
+ * that question (a resume notice needs to know it was a resume, not a deep link).
+ */
 export function useTutorial(startAt = 0): TutorialView {
-  const [stepIndex, setStepIndex] = useState(() => clamp(startAt))
+  const [stepIndex, setStepIndex] = useState(() => clamp(hashStepIndex() ?? startAt))
   const [solved, setSolved] = useState<ReadonlySet<number>>(() => new Set<number>())
-  const [working, setWorking] = useState<Working>(() => workingFor(clamp(startAt), new Set<number>()))
+  const [working, setWorking] = useState<Working>(() => workingFor(stepIndex, new Set<number>()))
 
   /** Mirrors `solved`, but updated synchronously so batched navigation can read it. */
   const solvedRef = useRef<ReadonlySet<number>>(solved)
+
+  /** The fragment this hook last wrote, or last accepted from the URL. */
+  const hashRef = useRef<string | null>(null)
 
   const frame = FRAMES[stepIndex]
   const step = frame.step
@@ -238,6 +303,69 @@ export function useTutorial(startAt = 0): TutorialView {
   useEffect(() => {
     saveProgress(stepIndex)
   }, [stepIndex])
+
+  /**
+   * The URL follows the step. The first write REPLACES, so a deep link — or a fragment the app
+   * could not honour — is corrected in place and the app adds no entry of its own on top of
+   * the one the learner arrived on. Every later write PUSHES, which is the whole point: Back
+   * then means "previous step" instead of "leave the guide", which is the gesture a confused
+   * learner reaches for first on a phone.
+   *
+   * A step change that came FROM the URL has already recorded its fragment in `hashRef`, so it
+   * stops at the first line and the browser's own traversal is not duplicated with an entry of
+   * ours. That check also makes this idempotent under StrictMode's double-invocation: the
+   * second run sees the fragment it just wrote and does nothing.
+   */
+  useEffect(() => {
+    const target = hashFor(stepIndex)
+    if (hashRef.current === target) return
+    const first = hashRef.current === null
+    hashRef.current = target
+    try {
+      if (first) history.replaceState(null, '', target)
+      else history.pushState(null, '', target)
+    } catch {
+      // Sandboxed frame, `file://`, or Safari's pushState rate limit. Not worth a broken
+      // guide: the step still changes, only the link stops keeping up.
+    }
+  }, [stepIndex])
+
+  /**
+   * Back and Forward move through the guide instead of out of it.
+   *
+   * Both events are listened for: traversing to a fragment-only entry fires `popstate`, and
+   * editing the fragment in the address bar fires `hashchange`. Handling one move twice is
+   * harmless — the second call sets the same index and React bails out.
+   *
+   * A move that comes from the URL is an ENTRY, not a navigation. It never routes through
+   * `move()` and never marks anything solved, so it cannot weaken the checkpoint gate: a
+   * checkpoint the learner lands on is unsolved and still blocks Next, and one they walk back
+   * to blocks them again.
+   */
+  useEffect(() => {
+    const onUrlNav = () => {
+      const index = clamp(hashStepIndex() ?? 0)
+      const target = hashFor(index)
+      if (location.hash !== target) {
+        // The URL named something unusable. Correct it IN PLACE — pushing would leave the bad
+        // fragment one Back away, and correcting it again on arrival would trap the learner in
+        // a fragment they can never get behind.
+        try {
+          history.replaceState(null, '', target)
+        } catch {
+          // As above.
+        }
+      }
+      hashRef.current = target
+      setStepIndex(index)
+    }
+    window.addEventListener('popstate', onUrlNav)
+    window.addEventListener('hashchange', onUrlNav)
+    return () => {
+      window.removeEventListener('popstate', onUrlNav)
+      window.removeEventListener('hashchange', onUrlNav)
+    }
+  }, [])
 
   /** Update the working state, rebasing onto this step if it belonged to a previous one. */
   const edit = useCallback(

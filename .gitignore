@@ -7,3 +7,6 @@ dist/
 .DS_Store
 .vercel/
 coverage/
+
+# Nested worktrees from background sessions
+.claude/worktrees/

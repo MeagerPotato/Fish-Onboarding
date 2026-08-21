@@ -4,7 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage'] },
+  // .claude/worktrees holds nested git worktrees created by background sessions. Linting
+  // them gives typescript-eslint two candidate tsconfig roots and every file then fails to
+  // parse — 69 errors, none of them real. They are not our source; never lint them.
+  { ignores: ['dist', 'node_modules', 'coverage', '.claude/**', '**/.claude/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
