@@ -1,0 +1,125 @@
+/*
+ * ResumeBar — the notice that a returning learner was moved. docs/MOBILE_SPEC.md §1.3.
+ *
+ * Styling hooks available on these elements (set by the component, read by you):
+ *   [data-resumed-step="N"] on the bar
+ *
+ * In normal flow, never fixed and never absolute: §1.3 requires it to be non-blocking, and
+ * §10.1 forbids floating chrome over content. It is one row that can wrap, so the two
+ * controls drop below the sentence rather than squeezing it, and it never grows past the
+ * height of the 44px control inside it.
+ *
+ * Three channels say "notice", not one: the accent tint, a 2px accent edge on the start side,
+ * and the ↩ glyph. Any two can be lost — greyscale, a low-colour screen — and it still reads.
+ */
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dg-u2);
+  padding: var(--dg-u1) var(--dg-u2);
+  border: var(--dg-s-hair) solid var(--dg-accent-line);
+  border-inline-start-width: var(--dg-s-strong);
+  border-radius: var(--dg-r-md);
+  background: var(--dg-accent-tint);
+  animation: resumeIn var(--dg-slow) var(--dg-ease-out) both;
+}
+
+@keyframes resumeIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--dg-rise-chip)));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Takes the slack but keeps its automatic min-content floor, so a narrow phone wraps the
+ * controls onto their own line instead of grinding the sentence down to one word per line.
+ */
+.message {
+  flex: 1 1 auto;
+  font-size: var(--dg-label);
+  line-height: 1.35;
+  color: var(--dg-ink);
+}
+
+.message::before {
+  content: '↩ ';
+  font-weight: 700;
+  color: var(--dg-accent-ink);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--dg-u2);
+  margin-inline-start: auto;
+}
+
+.restart,
+.dismiss {
+  border-radius: var(--dg-r-sm);
+  /* Kills the 300ms double-tap-zoom delay (MOBILE_SPEC §6.7). */
+  touch-action: manipulation;
+  transition:
+    background var(--dg-fast) var(--dg-ease),
+    color var(--dg-fast) var(--dg-ease),
+    scale var(--dg-fast) var(--dg-ease);
+}
+
+.restart:active,
+.dismiss:active {
+  scale: var(--dg-press);
+}
+
+/* The offer, not the default: outlined against the tint rather than filled over it. */
+.restart {
+  padding-inline: var(--dg-u3);
+  border: var(--dg-s-line) solid var(--dg-accent-line);
+  background: var(--dg-paper);
+  font-size: var(--dg-label);
+  font-weight: 600;
+  color: var(--dg-accent-ink);
+}
+
+/* Square, so the ✕ has the same 44px finger on both axes. */
+.dismiss {
+  min-inline-size: var(--dg-node-min);
+  font-size: var(--dg-name);
+  color: var(--dg-muted);
+}
+
+@media (hover: hover) {
+  .restart:hover {
+    background: var(--dg-paper-2);
+  }
+
+  .dismiss:hover {
+    color: var(--dg-ink);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A resumed session is not part of the reference card. §10.2 drops all chrome. */
+@media print {
+  .bar {
+    display: none;
+  }
+}

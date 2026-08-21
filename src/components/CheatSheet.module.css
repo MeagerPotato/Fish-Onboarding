@@ -307,6 +307,126 @@
   color: var(--dg-accent-ink);
 }
 
+/* ------------------------------------------------------------------ phone, dense --- */
+
+/*
+ * D13 / docs/MOBILE_SPEC.md §10.1. This card is kept by screenshotting it, and a screenshot
+ * is one viewport — so on a phone every pixel not carrying a rule is a pixel of the rule that
+ * got cropped. Nothing is hidden here: all nine half-suits, all 54 faces and every sentence
+ * are in flow, at or above the 14px §10.1 floor. What changes is how tightly they are set.
+ *
+ * `screen and` for the same reason the 768px step has it: an A4 portrait page box is 717px,
+ * so a bare `width < 768px` would fire on paper and undo the print tuning below.
+ *
+ * The half-suit grid is the change that pays. A 3x3 of 111px cells cannot hold six 32px faces
+ * in a row, so each cell stacked them 2x3 and spent 138px of height on 45px of card. One
+ * half-suit per row puts the six faces beside their name instead of under it, which is also
+ * how a reference card is read: find the row, read across.
+ */
+@media screen and (width < 768px) {
+  .sheet {
+    gap: var(--dg-u3);
+  }
+
+  .block {
+    gap: var(--dg-u1);
+  }
+
+  /*
+   * 15px, not 17px. §7.1's 17px is the *teaching* body — the annotation a learner reads
+   * once, at arm's length. This is a reference card read at reading distance, and §10.1
+   * sets its own floor at 14px. Line-height is untouched, so §7.1's 1.5 still holds.
+   */
+  .lead,
+  .list > li,
+  .gates > li,
+  .outcomes > li {
+    font-size: var(--dg-name);
+  }
+
+  .list {
+    gap: var(--dg-u1);
+  }
+
+  /* Nothing in the chain is a touch target; the floor it needs is its own 24px disc. */
+  .gates > li {
+    min-block-size: var(--dg-u6);
+    padding-block: calc(var(--dg-u1) / 2);
+  }
+
+  /*
+   * The boxes tighten; the fork's stem and bracket are left exactly as they are. Those two
+   * pseudo-elements are retuned by the `@container` step above, which still fires inside this
+   * query on a 700px phone-width window, and a second opinion here would draw the stem
+   * through the bracket instead of into it.
+   */
+  .outcomes > li {
+    padding: var(--dg-u2) var(--dg-u2) var(--dg-u2) var(--dg-u6);
+  }
+
+  .outcomes > li::before {
+    inset-inline-start: var(--dg-u2);
+    inset-block-start: var(--dg-u2);
+  }
+
+  .halfSuits {
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(var(--dg-u1) / 2);
+  }
+
+  /*
+   * Name over range on the left, the six faces held together on the right. The faces keep
+   * `flex-wrap` from the base rule, so if the text column is ever squeezed past its floor
+   * they fold to 3+3 rather than pushing the page sideways.
+   */
+  .halfSuit {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--dg-u2);
+    row-gap: 0;
+    padding-block: calc(var(--dg-u1) / 2);
+  }
+
+  .halfSuitName {
+    grid-area: 1 / 1;
+  }
+
+  .halfSuitRange {
+    grid-area: 2 / 1;
+  }
+
+  .halfSuitCards {
+    grid-area: 1 / 2 / 3 / 3;
+    margin-block-start: 0;
+  }
+
+  /* The ninth's written tag takes the full width of its row rather than a 105px column. */
+  .halfSuit[data-ninth='true']::after {
+    grid-area: 3 / 1 / 4 / 3;
+  }
+}
+
+/*
+ * Below --bp-sm the six faces no longer leave a text column worth having: 320px leaves 68px
+ * beside them, which wraps "High Diamonds" and "9 through Ace" into four lines and makes the
+ * row taller than the 3x3 cell it replaced. So the name and the range share the line above
+ * instead — they fit side by side in 190px — and the faces keep the full width beneath them.
+ */
+@media screen and (width < 360px) {
+  .halfSuit {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: calc(var(--dg-u1) / 2);
+  }
+
+  .halfSuitRange {
+    grid-area: 1 / 2;
+  }
+
+  .halfSuitCards {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+}
+
 /* ------------------------------------------------------------------ wide screens --- */
 
 /*

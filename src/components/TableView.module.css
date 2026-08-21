@@ -76,7 +76,23 @@
    */
   min-block-size: calc(var(--seat) * 2 + var(--dg-u4));
   max-inline-size: 30rem;
-  max-block-size: calc(var(--dg-zone-table) - var(--dg-u5));
+  /*
+   * The ceiling must describe the SPACE, not the token.
+   *
+   * This used to be calc(--dg-zone-table - --dg-u5), which is 180px — a number derived from
+   * the phone token even when the zone is nothing like that tall. On a 1367x1310 desktop the
+   * table zone measures 962px and the ring was still pinned at 180, giving the six seats a
+   * vertical spread of 76px: two flat rows joined by the table ornament's edges, reading as a
+   * flowchart rather than as people sitting round a table, with ~780px of void beneath.
+   *
+   * A percentage cap is circular here and measured as such: TableView is an auto-sized grid
+   * item, so 100% resolves against its own content height — which is set by this very ring.
+   * min(100%, 19rem) therefore pinned at the old 180px forever. A flat 19rem lets the ring
+   * grow and the auto track grow with it, while stopping it stretching into a tall oval:
+   * a card table is wider than it is deep, and at the 30rem width cap 19rem is roughly a
+   * 16:10 ellipse, the shape of a real table seen from above.
+   */
+  max-block-size: 19rem;
   margin-inline: auto;
 }
 

@@ -2,22 +2,49 @@
  * The design system. Every component styles against these tokens and defines no colours,
  * sizes or durations of its own.
  *
- * Sources, all measured rather than invented:
- *   docs/DIAGRAM_SYSTEM.md    — the token set, contrast ratios, the 4px rhythm, the rules
- *                               that bind every diagram (max 2 accents, shape over colour)
- *   docs/DESIGN_INSPIRATION.md — motion values from the reference site
- *   docs/MOBILE_SPEC.md        — zone heights, touch targets, type floor
+ * The palette, type scale and spacing are ADAPTED from the measurements recorded in
+ * docs/PLEURAT_VISUAL_SPEC.md — an analysis of the reference site the project owner chose.
+ * Values are adapted, not lifted: none of their stylesheets, scripts or assets are
+ * reproduced here, and three of their choices are deliberately not followed. See
+ * "Where we deviate" below.
  *
- * The `--dg-` prefix is the design grammar. One vocabulary, used everywhere.
+ * Other sources:
+ *   docs/DIAGRAM_SYSTEM.md — the 4px rhythm and the rules that bind every diagram
+ *   docs/MOTION_STACK.md   — why the animation layer is CSS and not a library
+ *   docs/MOBILE_SPEC.md    — zone heights, touch targets, type floor
  *
- * THREE THINGS THAT ARE LOAD-BEARING, not taste:
- *   1. Colour never encodes anything on its own. Team is carried by corner radius, suit by
- *      glyph, state by border style. Colour reinforces; it never informs alone.
- *   2. The accent is split into three tokens by job — tint (fill), line (border), ink (text) —
- *      so it is impossible to use a fill colour as text and fail contrast. The reference site
- *      has two real contrast failures from doing exactly that.
- *   3. Reduced motion is implemented by zeroing the duration tokens. No component needs its
- *      own reduced-motion rule.
+ * FOUR THINGS THAT DEFINE THE LOOK, all measured rather than invented:
+ *
+ *   1. Nothing is neutral and nothing is elevated. Every grey is warm. Radius is 0
+ *      everywhere. Shadows are absent. Depth is a 1px line and a slightly different fill —
+ *      and the RAISED surface is brighter than the page, which is a paper idea rather than
+ *      a screen one. In dark mode that raised surface collapses back into the page.
+ *
+ *   2. The accent FILL is identical in both themes; only the accent TEXT moves. A fill
+ *      carries no contrast obligation, so it has no reason to change. Amber means state,
+ *      never decoration, and never more than two elements at once.
+ *
+ *   3. Gutter is split from inset. Body text sits at gutter + inset; rules, ticks and marks
+ *      sit at the gutter alone, hanging outside the text column. That offset is most of why
+ *      the reference reads as typeset rather than as a web page.
+ *
+ *   4. Hierarchy is size, case and colour — never weight, never a second family, never an
+ *      image. Two weights, a step-function line-height, and tracking signed by size.
+ *
+ * WHERE WE DEVIATE, and why:
+ *
+ *   - Their typeface is 45 KiB of woff2, roughly three times our entire remaining budget,
+ *     so we use a system stack. What is lost is the specific letterforms; what is kept is
+ *     the scale, the tracking and the two-weight discipline, which is where most of the
+ *     character actually lives.
+ *
+ *   - Nine of their light-theme text pairings fail WCAG AA (3.02-3.60:1 on tertiary ink,
+ *     2.69-3.21:1 on accent text), and their focus ring measures 1.35:1. We take the hue
+ *     and darken to the nearest compliant value. Both numbers are recorded on each token.
+ *
+ *   - Radius 0 costs us a channel: team identity used to be carried by corner radius. It is
+ *     now carried by the written marker ("BLUE" / "RED") already in the markup, with colour
+ *     as reinforcement. Still greyscale-safe — check that it stays so.
  */
 
 /* ------------------------------------------------------------------ reset --- */
@@ -67,10 +94,19 @@ ul {
   padding: 0;
 }
 
+::selection {
+  background: var(--dg-accent-tint);
+  color: var(--dg-ink);
+}
+
 :focus-visible {
+  /*
+   * Square, like everything else. The reference's own focus ring is a leftover lime that
+   * measures 1.35:1 against its page; we keep the shape and use the accent line instead.
+   */
   outline: var(--dg-s-focus) solid var(--dg-accent-line);
   outline-offset: 2px;
-  border-radius: var(--dg-r-sm);
+  border-radius: 0;
 }
 
 /* --------------------------------------------------------------- tokens --- */
@@ -78,31 +114,36 @@ ul {
 :root {
   color-scheme: light dark;
 
-  /* -- surface and ink. Contrast ratios measured against --dg-paper. ------- */
-  --dg-paper: #fdfaf2; /* warm off-white; never pure white */
-  --dg-paper-2: #f4efe2; /* recessed / container fill */
-  --dg-ink: #1a1710; /* 17.15:1 */
-  --dg-muted: #55504a; /*  7.65:1 — secondary text */
-  --dg-soft: #6b665c; /*  5.47:1 — still AA at our 13px floor */
-  --dg-rule: #8f8a7e; /*  3.30:1 — meaningful borders */
-  --dg-hair: rgba(26, 23, 16, 0.14); /* decorative separators only */
+  /* -- surface and ink. Warm throughout: no neutral grey anywhere. ---------- */
+  --dg-paper: #fffcf0; /* page ground */
+  --dg-paper-2: #fffdf3; /* RAISED — brighter than the page, deliberately */
+  --dg-paper-sunk: #f3edd6; /* recessed fill, the only "below" surface */
+  --dg-ink: #16140e; /* 18.24:1 */
+  --dg-muted: #57534a; /*  7.35:1 — secondary text */
+  --dg-soft: #6b6759; /*  5.02:1 — tertiary. Theirs is #8B8577 at 3.02:1, which fails. */
+  --dg-rule: #8b8577; /*  3.36:1 — borders only, never text */
+  --dg-hair: rgba(22, 20, 14, 0.16);
+  --dg-hair-faint: rgba(22, 20, 14, 0.08);
 
-  /* -- accent, split by job so the wrong one cannot be used ---------------- */
-  --dg-accent-tint: rgba(224, 145, 42, 0.14); /* fill only — no contrast floor */
-  --dg-accent-line: #b87214; /* 3.69:1 — borders, markers, focus */
-  --dg-accent-ink: #8a5207; /*  6.12:1 — accent as text */
+  /* -- accent. The fill never moves between themes; only the text does. ----- */
+  --dg-accent: #f3b44a; /* fill — identical in dark, by design */
+  --dg-accent-tint: rgba(243, 180, 74, 0.18);
+  --dg-accent-hover: #f9cb80;
+  --dg-accent-line: #b87214; /*  3.72:1 — borders and markers (needs 3:1) */
+  --dg-accent-ink: #8a5207; /*  6.18:1 — accent as text. Theirs is 2.69:1. */
+  --dg-on-accent: #16140e; /* ink on an accent fill */
 
-  /* -- teams. Reinforcement only: radius is the primary channel. ----------- */
-  --dg-blue: #123e75; /* 10.21:1 */
-  --dg-red: #b2461c; /*  5.32:1 */
+  /* -- teams. The written marker is primary; colour reinforces. ------------- */
+  --dg-blue: #1a3f6f; /* 10.34:1 */
+  --dg-red: #a8431a; /*  5.41:1 */
 
-  /* -- suits. Glyph is the primary channel; these reinforce. --------------- */
-  --dg-suit-spades: #17130c;
-  --dg-suit-clubs: #14532d;
-  --dg-suit-diamonds: #1b4f97;
-  --dg-suit-hearts: #b2461c;
+  /* -- suits. Glyph is primary; these reinforce. ---------------------------- */
+  --dg-suit-spades: #16140e;
+  --dg-suit-clubs: #17532f;
+  --dg-suit-diamonds: #1c4e92;
+  --dg-suit-hearts: #a8431a;
 
-  /* -- 4px rhythm --------------------------------------------------------- */
+  /* -- 4px rhythm ---------------------------------------------------------- */
   --dg-u1: 4px;
   --dg-u2: 8px;
   --dg-u3: 12px;
@@ -112,86 +153,80 @@ ul {
   --dg-u8: 32px;
   --dg-u10: 40px;
 
-  /* -- radii. Team identity uses these: Blue 12px, Red 4px. --------------- */
-  --dg-r-sm: 4px;
-  --dg-r-md: 8px;
-  --dg-r-lg: 12px;
-  --dg-r-pill: 999px;
+  /*
+   * Gutter and inset, kept separate. Body text sits at gutter + inset; rules, ticks and
+   * marks sit at the gutter alone so they hang outside the text column.
+   */
+  --dg-gutter: 16px;
+  --dg-inset: 9px;
 
-  /* -- strokes. Anything meaningful is >= 1.5px and >= 3:1. ---------------- */
+  /* -- shape. Zero. Everywhere. -------------------------------------------- */
+  --dg-r-sm: 0;
+  --dg-r-md: 0;
+  --dg-r-lg: 0;
+  --dg-r-pill: 0;
+
+  /* -- strokes. Anything meaningful is >= 1.5px and >= 3:1. ----------------- */
   --dg-s-hair: 1px;
   --dg-s-line: 1.5px;
   --dg-s-strong: 2px;
   --dg-s-focus: 3px;
 
-  /* -- type. Floor is 13px; 13px is body text here, not a micro-label. ----- */
-  --dg-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
-  /*
-   * Type is in rem so OS-level text scaling grows the copy. At the default 16px root these
-   * are exactly 13 / 15 / 17px, so nothing shifts visually — but a reader who has raised
-   * their system font size gets larger text instead of being ignored.
-   * Touch targets stay in px: 44px is a physical finger, not a typographic unit.
-   */
-  --dg-label: 0.8125rem; /* 13px */
+  /* -- type ---------------------------------------------------------------- */
+  --dg-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --dg-label: 0.8125rem; /* 13px — our floor; theirs drops to 10.5px and fails contrast */
   --dg-name: 0.9375rem; /* 15px */
   --dg-lead: 1.0625rem; /* 17px */
   /*
-   * Display size. The floor matters more than the ceiling here: at 375px the old 20px floor
-   * put the title only 1.18x above body copy, where the reference site measures 2.2x. The
-   * viewport term is kept gentle because the phone annotation zone is 206px and a headline
-   * that eats it would push the body out of view; desktop has 656px and takes the full size.
+   * Display. The reference measures 2.16x body at 375px and 3.43x at 1440px. Ours was
+   * 1.29x, which is the single largest reason the page read as flat. This tracks their
+   * curve within what a 269px annotation zone can hold on a phone.
    */
-  --dg-display: clamp(1.375rem, 2.6vw, 2.25rem); /* 22px floor -> 36px cap */
-  --dg-track: 0.08em;
-  /*
-   * The reference site's "mono eyebrow" is not a mono face — it is uppercase plus tracking.
-   * We copy the technique, which costs nothing, rather than the second font, which costs 20 KB.
-   */
+  --dg-display: clamp(2.25rem, 1.4rem + 3.6vw, 3.5rem); /* 36px -> 56px */
+  --dg-lh-display: 1.08;
+  --dg-lh-body: 1.55;
+  --dg-lh-prose: 1.7;
+  /* Tracking signed by size: tight for display, open for small uppercase. */
+  --dg-track-display: -0.03em;
+  --dg-track: 0.12em;
 
-  /* -- touch -------------------------------------------------------------- */
+  /* -- touch --------------------------------------------------------------- */
   --dg-node-min: 44px;
   --dg-node-gap: 8px;
 
-  /* -- motion. Two curves, two bands. Zeroed under reduced-motion. --------- */
+  /* -- motion. Two curves, two bands. Zeroed under reduced-motion. ---------- */
   --dg-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --dg-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --dg-fast: 120ms; /* state change: a press, a selection */
-  --dg-slow: 240ms; /* zone-level change: a step transition */
-  /*
-   * Entrance distance scales with the size of the thing entering — the single most
-   * transferable rule from docs/DESIGN_INSPIRATION.md §4.
-   */
+  --dg-fast: 120ms;
+  --dg-slow: 240ms;
   --dg-rise-chip: 8px;
   --dg-rise-card: 12px;
   --dg-rise-zone: 16px;
-  /* Pressing something squashes it slightly. The only affordance that survives on touch. */
   --dg-press: 0.965;
 
-  /* -- shell zones. docs/MOBILE_SPEC.md §4: only the annotation zone flexes. */
+  /* -- shell zones. docs/MOBILE_SPEC.md §4. -------------------------------- */
   --dg-zone-header: 48px;
   --dg-zone-table: 200px;
   --dg-zone-hand: 132px;
   --dg-zone-nav: 64px;
-  --dg-page-pad: var(--dg-u3);
+  --dg-page-pad: calc(var(--dg-gutter) + var(--dg-inset));
   --dg-content-max: 1120px;
 }
 
-/*
- * Phone zone rebalance.
- *
- * The spec'd budget (table 200 + hand 132) was written before the score rail was honest about
- * its height. With the header no longer clipping its nine chips, a 650px phone had 168px left
- * for the teaching copy that needs ~256 — so a learner would have scrolled on all 19 steps.
- *
- * These are the measured slacks, not guesses. The hand renders at 93.8px inside its 132px zone
- * at 375px (34px unused), and the nav's controls are 44px inside 64. Reclaiming that slack, plus
- * trimming the table band, moves ~68px from chrome to content. Values stay constant across
- * steps, which is what the fixed-zone rule actually protects: the table must not jump between
- * steps, and it does not.
- */
+@media (width >= 768px) {
+  :root {
+    --dg-gutter: 32px;
+    --dg-inset: 20px;
+  }
+}
+
 @media (width < 600px) {
   :root {
+    /*
+     * Phone rebalance, measured. The hand renders at 93.8px inside a 132px zone and the
+     * nav's controls are 44px inside 64, so both hand slack back to the teaching copy.
+     */
     --dg-zone-table: 164px;
     --dg-zone-hand: 104px;
     --dg-zone-nav: 56px;
@@ -200,32 +235,39 @@ ul {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --dg-paper: #14130e;
-    --dg-paper-2: #1e1c15;
-    --dg-ink: #f4f1e8; /* 16.47:1 */
-    --dg-muted: #a9a499; /*  7.49:1 */
-    --dg-soft: #948f84; /*  5.78:1 */
-    --dg-rule: #6e695e; /*  3.41:1 */
-    --dg-hair: rgba(244, 241, 232, 0.16);
+    --dg-paper: #13120d;
+    /* The raised surface collapses into the page in dark: brighter paper is a light-mode
+       idea, and faking it here produces a grey box rather than a lit one. */
+    --dg-paper-2: #13120d;
+    --dg-paper-sunk: #1f1c11;
+    --dg-ink: #f1eee6; /* 16.92:1 */
+    --dg-muted: #a4a097; /*  7.71:1 */
+    --dg-soft: #928c7e; /*  5.94:1 */
+    --dg-rule: #6e695e; /*  3.40:1 */
+    --dg-hair: rgba(241, 238, 230, 0.24);
+    --dg-hair-faint: rgba(241, 238, 230, 0.12);
 
-    --dg-accent-tint: rgba(224, 145, 42, 0.18);
-    --dg-accent-line: #e0912a; /*  7.31:1 */
-    --dg-accent-ink: #efb65c; /* 10.20:1 */
+    --dg-accent: #f3b44a; /* unchanged, deliberately */
+    --dg-accent-tint: rgba(243, 180, 74, 0.16);
+    --dg-accent-hover: #f9cb80;
+    --dg-accent-line: #dd922f; /*  7.68:1 */
+    --dg-accent-ink: #e9ad5a; /* 10.13:1 */
+    --dg-on-accent: #16140e;
 
-    --dg-blue: #6fa6e8; /*  7.35:1 */
-    --dg-red: #f3b79e; /* 10.70:1 */
+    --dg-blue: #7fb0ea; /*  8.11:1 */
+    --dg-red: #f0b49a; /* 10.36:1 */
 
-    --dg-suit-spades: #edeae1;
-    --dg-suit-clubs: #5fbf87;
-    --dg-suit-diamonds: #7fb4f0;
-    --dg-suit-hearts: #f3b79e;
+    --dg-suit-spades: #f1eee6;
+    --dg-suit-clubs: #63c48c;
+    --dg-suit-diamonds: #86b9f2;
+    --dg-suit-hearts: #f0b49a;
   }
 }
 
 /*
  * Reduced motion. Zeroing the tokens is the mechanism — see DIAGRAM_SYSTEM §3.4. The
- * blanket rule below is the belt; the tokens are the braces, so a component that forgets
- * to reference a token still cannot animate.
+ * blanket rule below is the belt; the tokens are the braces, so a component that forgets to
+ * reference a token still cannot animate.
  */
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -254,7 +296,7 @@ body {
   margin: 0;
   font-family: var(--dg-font);
   font-size: var(--dg-lead);
-  line-height: 1.5;
+  line-height: var(--dg-lh-body);
   color: var(--dg-ink);
   background: var(--dg-paper);
   -webkit-font-smoothing: antialiased;
@@ -271,44 +313,48 @@ body {
 /* ------------------------------------------------------------ utilities --- */
 
 /*
- * The eyebrow treatment, defined once. Uppercase + tracking reads as "mono label" without
- * loading a mono face.
+ * The eyebrow. Uppercase plus wide tracking reads as an instrument label without loading a
+ * mono face — the reference does exactly this, and its own "mono" token points at the same
+ * sans family.
  */
 .dg-eyebrow {
   font-size: var(--dg-label);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: var(--dg-track);
   text-transform: uppercase;
   color: var(--dg-soft);
 }
 
 /*
- * Print. The dark palette must not follow the page onto paper — a reader with dark mode on
- * would otherwise print near-white ink on white. Overriding the TOKENS rather than just
- * body colour means every component that says `color: var(--dg-ink)` prints black without
- * needing its own print rule.
- */
-/*
- * @page is a global at-rule and cannot live in a CSS Module — it would be scoped away. It
- * belongs here. 10mm keeps the reference card on one A4/Letter page; the cheat sheet was
- * measured against Chrome's 0.4in default and clears it with room to spare either way.
+ * @page is a global at-rule and cannot live in a CSS Module — it would be scoped away.
+ * 10mm keeps the reference card on one A4/Letter page.
  */
 @page {
   margin: 10mm;
 }
 
+/*
+ * Print. The dark palette must not follow the page onto paper. Overriding the TOKENS rather
+ * than only body colour means every component that says `color: var(--dg-ink)` prints black
+ * without needing a print rule of its own.
+ */
 @media print {
   :root {
     --dg-paper: #fff;
     --dg-paper-2: #fff;
+    --dg-paper-sunk: #fff;
     --dg-ink: #000;
     --dg-muted: #333;
     --dg-soft: #444;
     --dg-rule: #666;
     --dg-hair: rgba(0, 0, 0, 0.25);
+    --dg-hair-faint: rgba(0, 0, 0, 0.12);
+    --dg-accent: transparent;
     --dg-accent-tint: transparent;
+    --dg-accent-hover: transparent;
     --dg-accent-line: #000;
     --dg-accent-ink: #000;
+    --dg-on-accent: #000;
     --dg-blue: #000;
     --dg-red: #000;
     --dg-suit-spades: #000;

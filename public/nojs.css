@@ -1,0 +1,37 @@
+/*
+ * Linked from a <noscript> in <head>, so it is fetched only when scripting is off — zero
+ * bytes and zero requests on the dominant path, which is why the rules that only matter
+ * in that mode live here and not in boot.css.
+ *
+ * #boot would otherwise sit there saying "Loading the guide…" forever, directly above copy
+ * explaining that it is never going to load.
+ */
+#boot {
+  display: none;
+}
+
+/* Mirrors .dg-eyebrow in index.css: uppercase plus tracking, no second font. */
+.boot-eyebrow {
+  font-size: var(--dg-label, 0.8125rem);
+  font-weight: 600;
+  letter-spacing: var(--dg-track, 0.08em);
+  text-transform: uppercase;
+  color: var(--dg-soft, #6b665c);
+}
+
+.nojs h2 {
+  margin-block-start: var(--dg-u6, 24px);
+  font-size: var(--dg-lead, 1.0625rem);
+  font-weight: 600;
+}
+
+.nojs ol {
+  margin-inline-start: var(--dg-u5, 20px);
+  padding: 0;
+  /* index.css strips list markers globally; here the numbers are the content. */
+  list-style: decimal;
+}
+
+.nojs li {
+  margin-block-start: var(--dg-u2, 8px);
+}

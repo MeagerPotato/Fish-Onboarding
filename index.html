@@ -10,9 +10,72 @@
       content="An interactive 10-minute guide to Literature (Canadian Fish) — nine half-suits, six players, no prior knowledge needed."
     />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Boot shell + no-JS fallback. Rationale: foot of src/main.tsx. -->
+    <link rel="stylesheet" href="/boot.css" />
+    <script src="/boot.js" defer></script>
+    <noscript><link rel="stylesheet" href="/nojs.css" /></noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot" class="boot">
+        <h1>Six players, two teams</h1>
+        <p>
+          You are one of six players at a table, three against three. This guide deals you a hand
+          and teaches the whole game.
+        </p>
+        <p class="boot-status" role="status">
+          <span class="boot-wait">Loading the guide…</span>
+          <span class="boot-late">Still loading — the venue wifi may be slow.</span>
+        </p>
+        <button id="boot-retry" class="boot-retry" type="button">Retry</button>
+      </div>
+
+      <noscript>
+        <div class="nojs">
+          <p class="boot-eyebrow">Learn Fish · the short version</p>
+          <h1>Six players, two teams</h1>
+          <p>
+            Fish, also called Literature, is a card game for six people, three against three. Seats
+            alternate, so an opponent sits on each side of you. The deck is 54 cards: a full pack
+            plus both jokers, nine each. You see only your own cards. You learn the rest by
+            listening.
+          </p>
+          <p>
+            The cards split into nine sets of six. Each set is a half-suit. Every suit makes two:
+            the low half (2 to 7) and the high half (9 to Ace). The ninth is the four 8s plus the
+            two jokers. Each half-suit is worth a point, and the first team to five wins.
+          </p>
+
+          <h2>Your turn: ask for one card</h2>
+          <p>
+            You name one card and one opponent, out loud. They hand it over and you ask again, or
+            they say no and the turn passes to them. There is no drawing and no discarding.
+          </p>
+          <p>An ask must follow four rules.</p>
+          <ol>
+            <li>Ask an opponent, never a teammate.</li>
+            <li>Hold a card of that half-suit already.</li>
+            <li>Do not ask for a card you hold.</li>
+            <li>The player you ask must still have cards.</li>
+          </ol>
+
+          <h2>Claiming a half-suit</h2>
+          <p>
+            Holding cards scores nothing. To win a half-suit you claim it: name the half-suit, then
+            name who holds each of its six cards — you or one of your two teammates, never an
+            opponent. All six right and your team is awarded the point. One card wrong, or an
+            opponent holding any of them, and the other team is awarded it.
+          </p>
+
+          <h2>The rest needs JavaScript</h2>
+          <p>
+            The full guide walks you through 19 steps in about ten minutes. It runs entirely in
+            your browser, but it does need JavaScript. Turn it on for this site and reload, or open
+            this address in another browser.
+          </p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

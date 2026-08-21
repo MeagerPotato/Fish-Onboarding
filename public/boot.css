@@ -1,0 +1,59 @@
+/* Holding state + no-JS fallback. Rationale, and why this is a file: foot of src/main.tsx. */
+.boot,
+.nojs {
+  box-sizing: border-box;
+  max-inline-size: 34rem;
+  margin-inline: auto;
+  padding: calc(var(--dg-u6, 24px) + env(safe-area-inset-top)) var(--dg-u4, 16px)
+    calc(var(--dg-u8, 32px) + env(safe-area-inset-bottom));
+  font-family: var(--dg-font, system-ui, sans-serif);
+  font-size: var(--dg-lead, 1.0625rem);
+  line-height: 1.5;
+  color: var(--dg-ink, #1a1710);
+}
+
+.boot > * + *,
+.nojs > * + * {
+  margin-block-start: var(--dg-u4, 16px);
+}
+
+.boot h1,
+.nojs h1 {
+  max-inline-size: 22ch;
+  font-size: var(--dg-display, 1.375rem);
+  font-weight: 500;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+.boot-status {
+  color: var(--dg-muted, #55504a);
+}
+
+/* The 8s swap: boot.js sets body[data-boot="slow"], main.tsx sets "ready" instead. */
+.boot-late,
+[data-boot='slow'] .boot-wait {
+  display: none;
+}
+
+[data-boot='slow'] .boot-late {
+  display: inline;
+}
+
+.boot-retry {
+  display: none;
+}
+
+[data-boot='slow'] .boot-retry {
+  display: inline-block;
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding: var(--dg-u3, 12px) var(--dg-u5, 20px);
+  font: inherit;
+  font-weight: 600;
+  color: var(--dg-accent-ink, #8a5207);
+  background: var(--dg-accent-tint, rgba(224, 145, 42, 0.14));
+  border: var(--dg-s-line, 1.5px) solid var(--dg-accent-line, #b87214);
+  border-radius: var(--dg-r-md, 8px);
+  cursor: pointer;
+}
