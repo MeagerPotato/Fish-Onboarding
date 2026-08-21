@@ -26,9 +26,9 @@ export function ScoreRail({ score, spotlight }: ScoreRailProps) {
         <span className={s.team} data-team="1">
           Red <b data-testid="score-red">{score.red}</b>
         </span>
-        {score.voided > 0 ? (
-          <span className={s.voided} data-testid="score-voided">
-            {score.voided} void
+        {score.winner === null && score.toWin > 0 ? (
+          <span className={s.toWin} data-testid="score-to-win">
+            {score.toWin} to win
           </span>
         ) : null}
       </p>
@@ -46,11 +46,7 @@ export function ScoreRail({ score, spotlight }: ScoreRailProps) {
             <span className={s.chipLabel}>{h.short}</span>
             <span className={s.srOnly}>
               {h.name}:{' '}
-              {h.state === 'open'
-                ? 'still in play'
-                : h.state === 'void'
-                  ? `voided by ${h.claimedBy}`
-                  : `won by ${h.state === 'team0' ? 'Blue' : 'Red'}`}
+              {h.state === 'open' ? 'still in play' : `won by ${h.state === 'team0' ? 'Blue' : 'Red'}`}
             </span>
           </li>
         ))}

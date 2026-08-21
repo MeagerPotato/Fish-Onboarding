@@ -32,6 +32,7 @@ export {
   ALL_CARDS,
   ALL_HALF_SUITS,
   ALL_SEATS,
+  HALF_SUITS_TO_WIN,
   isCard,
   isHalfSuitId,
   isJoker,

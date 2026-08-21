@@ -4,7 +4,15 @@
  * Returns a list of violations rather than throwing.
  */
 import type { Card, GameState } from './types.ts'
-import { ALL_CARDS, ALL_HALF_SUITS, cardCompare, halfSuitCards, seatTeam, teamCardCount } from './cards.ts'
+import {
+  ALL_CARDS,
+  ALL_HALF_SUITS,
+  HALF_SUITS_TO_WIN,
+  cardCompare,
+  halfSuitCards,
+  seatTeam,
+  teamCardCount,
+} from './cards.ts'
 
 export function checkInvariants(s: GameState): string[] {
   const problems: string[] = []
@@ -37,23 +45,30 @@ export function checkInvariants(s: GameState): string[] {
     }
   })
 
-  // 3. Score matches the resolved half-suits.
+  // 3. Score matches the resolved half-suits. Every resolved half-suit is awarded to
+  //    exactly one team, so the two must agree exactly — there is no void to account for.
   const tally: [number, number] = [0, 0]
   for (const h of ALL_HALF_SUITS) {
     const r = s.halfSuits[h]
     if (!r) continue
-    if (r.outcome === 'team0') tally[0] += 1
-    else if (r.outcome === 'team1') tally[1] += 1
+    tally[r.outcome === 'team0' ? 0 : 1] += 1
   }
   if (tally[0] !== s.score[0] || tally[1] !== s.score[1])
     problems.push(`score ${s.score.join('-')} disagrees with resolved half-suits ${tally.join('-')}`)
 
-  // 4. Phase consistency.
   const resolvedCount = ALL_HALF_SUITS.filter((h) => s.halfSuits[h]).length
+  if (s.score[0] + s.score[1] !== resolvedCount)
+    problems.push(`${resolvedCount} half-suits resolved but only ${s.score[0] + s.score[1]} awarded`)
+
+  // 4. Phase consistency. Play stops the moment a team reaches five, so a finished game has
+  //    between five and nine half-suits resolved, and an unfinished one has neither team there.
+  const best = Math.max(s.score[0], s.score[1])
+  if (best >= HALF_SUITS_TO_WIN && s.phase !== 'finished')
+    problems.push(`a team has reached ${best} but phase is ${s.phase}`)
+  if (s.phase === 'finished' && best < HALF_SUITS_TO_WIN && resolvedCount !== ALL_HALF_SUITS.length)
+    problems.push(`phase is finished at ${s.score.join('-')} with ${resolvedCount} resolved`)
   if (resolvedCount === ALL_HALF_SUITS.length && s.phase !== 'finished')
     problems.push(`all ${ALL_HALF_SUITS.length} half-suits are resolved but phase is ${s.phase}`)
-  if (s.phase === 'finished' && resolvedCount !== ALL_HALF_SUITS.length)
-    problems.push(`phase is finished with only ${resolvedCount} half-suits resolved`)
   if (s.phase === 'playing' && teamCardCount(s.hands, 0) === 0 && resolvedCount < ALL_HALF_SUITS.length)
     problems.push('team 0 is out of cards but phase is still playing')
   if (s.phase === 'playing' && teamCardCount(s.hands, 1) === 0 && resolvedCount < ALL_HALF_SUITS.length)

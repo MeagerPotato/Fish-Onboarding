@@ -268,17 +268,17 @@ describe('curriculum constraints', () => {
     expect(acts).toEqual([...acts].sort((a, b) => a - b))
   })
 
-  it('teaches all three claim outcomes and both ask outcomes somewhere in the copy', () => {
+  it('teaches both claim outcomes and both ask outcomes somewhere in the copy', () => {
     // Concepts, not phrasing. The copy is deliberately plain and gets reworded; what must
     // never drop out is the idea itself.
     const all = SCRIPT.map((s) => `${s.title} ${s.body}`).join(' ').toLowerCase()
     const ideas: [string, RegExp][] = [
-      ['a claim can be voided', /\bvoid\b/],
-      ['the opposing team can score your claim', /other team scores/],
+      ['a wrong claim hands the half-suit over', /other team is awarded it/],
+      ['the game stops at five', /first team to win five|reaches five/],
       ['a hit lets you continue', /you go again|still your turn/],
       ['a miss passes the turn', /now it is her turn|the turn is theirs|hand the turn/],
       ['you may never ask a teammate', /never a teammate|never ask (a|an|your|her|him)/],
-      ['five of nine wins', /five points wins|five of nine/],
+      ['a draw is impossible', /draw cannot happen/],
     ]
     for (const [idea, pattern] of ideas) {
       expect(pattern.test(all), `the guide never explains: ${idea}`).toBe(true)

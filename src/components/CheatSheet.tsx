@@ -25,7 +25,7 @@ export function CheatSheet() {
         <ul className={s.list}>
           <li>6 players, 2 teams of 3, sitting in alternate seats.</li>
           <li>54 cards: a full pack plus both jokers. 9 each.</li>
-          <li>9 half-suits of 6 cards. Win 5 and the game is over.</li>
+          <li>9 half-suits of 6 cards. First team to win 5 ends the game.</li>
         </ul>
       </section>
 
@@ -51,17 +51,15 @@ export function CheatSheet() {
       <section className={s.block}>
         <h3 className={s.heading}>Claiming a half-suit</h3>
         <p className={s.lead}>
-          Name the half-suit, then name who holds each of its six cards. Three things can happen:
+          Name the half-suit, then name who holds each of its six cards. Two things can happen:
         </p>
         <ul className={s.outcomes}>
           <li data-outcome="win">
-            <strong>All six right</strong> — your team scores it.
+            <strong>All six right</strong> — your team is awarded it.
           </li>
           <li data-outcome="lose">
-            <strong>An opponent holds even one</strong> — the other team scores it.
-          </li>
-          <li data-outcome="void">
-            <strong>All six on your team, but one named wrong</strong> — void, nobody scores.
+            <strong>Wrong for any reason</strong> — an opponent held one, or you named the wrong
+            hand — the other team is awarded it.
           </li>
         </ul>
         <p className={s.note}>A claim never ends your turn. You may claim a half-suit you hold no cards of.</p>
@@ -94,8 +92,8 @@ export function CheatSheet() {
           ))}
         </ol>
         <p className={s.note}>
-          Nine is odd on purpose. If the score reaches 4–4, the last half-suit breaks the tie. Only a
-          void can still cause a draw.
+          Nine is odd on purpose. Every half-suit always goes to a team, so someone always reaches
+          5 first. A draw cannot happen.
         </p>
       </section>
 

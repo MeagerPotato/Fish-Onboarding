@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ALL_HALF_SUITS,
+  HALF_SUITS_TO_WIN,
   checkInvariants,
   halfSuitCards,
   legalActionKinds,
@@ -81,40 +82,58 @@ function playOut(seed: string): { state: GameState; steps: number } {
 describe('fuzz', () => {
   const SEEDS = Array.from({ length: 300 }, (_, i) => `fuzz-${i}`)
 
-  it('every game reaches a finished state with all nine half-suits resolved', () => {
+  it('every game reaches a finished state', () => {
     for (const seed of SEEDS) {
       const { state, steps } = playOut(seed)
       expect(state.phase, `seed ${seed} stalled after ${steps} steps`).toBe('finished')
-      expect(Object.keys(state.halfSuits), `seed ${seed}`).toHaveLength(9)
+      // Play stops at five, so anywhere from five to nine half-suits will have been resolved.
+      const resolved = Object.keys(state.halfSuits).length
+      expect(resolved, `seed ${seed}`).toBeGreaterThanOrEqual(HALF_SUITS_TO_WIN)
+      expect(resolved, `seed ${seed}`).toBeLessThanOrEqual(9)
     }
   })
 
-  it('the score never exceeds nine and always matches the outcomes', () => {
+  it('leaves half-suits unplayed when the game is decided early', () => {
+    // A 5-0 through 5-3 finish means the rest were never played. Over 300 seeds at least
+    // some games must end before all nine resolve, or the stop-at-five rule is not firing.
+    const shortGames = SEEDS.filter((seed) => Object.keys(playOut(seed).state.halfSuits).length < 9)
+    expect(shortGames.length, 'no game ever ended early').toBeGreaterThan(0)
+  })
+
+  it('every resolved half-suit is awarded to a team — nothing is ever voided', () => {
     for (const seed of SEEDS.slice(0, 100)) {
       const { state } = playOut(seed)
-      const [a, b] = state.score
-      const voids = ALL_HALF_SUITS.filter((h) => state.halfSuits[h]?.outcome === 'void').length
-      expect(a + b + voids).toBe(9)
-      expect(a + b).toBeLessThanOrEqual(9)
+      const resolved = ALL_HALF_SUITS.filter((h) => state.halfSuits[h]).length
+      expect(state.score[0] + state.score[1], `seed ${seed}`).toBe(resolved)
+      for (const h of ALL_HALF_SUITS) {
+        const r = state.halfSuits[h]
+        if (r) expect(['team0', 'team1'], `seed ${seed} ${h}`).toContain(r.outcome)
+      }
     }
   })
 
-  it('a game with no voids can never end in a tie — the point of the ninth half-suit', () => {
-    let cleanGames = 0
+  it('stops the moment a team reaches five, and never plays on past it', () => {
     for (const seed of SEEDS) {
       const { state } = playOut(seed)
-      const voids = ALL_HALF_SUITS.filter((h) => state.halfSuits[h]?.outcome === 'void').length
-      if (voids > 0) continue
-      cleanGames++
+      const winner = Math.max(state.score[0], state.score[1])
+      const loser = Math.min(state.score[0], state.score[1])
+      expect(winner, `seed ${seed} finished on ${winner}`).toBe(HALF_SUITS_TO_WIN)
+      expect(loser, `seed ${seed} loser had ${loser}`).toBeLessThan(HALF_SUITS_TO_WIN)
+      // Five is reached at the earliest opportunity, so at most nine are ever resolved.
+      expect(state.score[0] + state.score[1]).toBeLessThanOrEqual(9)
+    }
+  })
+
+  it('can never end in a draw — the whole point of an odd ninth half-suit', () => {
+    for (const seed of SEEDS) {
+      const { state } = playOut(seed)
+      expect(state.score[0], `seed ${seed} drew`).not.toBe(state.score[1])
       const last = state.log.at(-1)
       expect(last).toMatchObject({ type: 'game_over' })
       if (last?.type === 'game_over') {
-        expect(last.winner, `seed ${seed} tied with no voids`).not.toBe('tie')
-        expect(Math.abs(state.score[0] - state.score[1]) % 2, `seed ${seed}`).toBe(1)
+        expect([0, 1], `seed ${seed}`).toContain(last.winner)
       }
     }
-    // The policy voids plenty of half-suits, but some games must come through clean.
-    expect(cleanGames).toBeGreaterThan(0)
   })
 
   it('never reveals a hand through the public log', () => {

@@ -23,7 +23,7 @@ baseline.
 | **ask** | The core action: requesting one named card from one named opponent. |
 | **hit** / **miss** | The two outcomes of an ask. |
 | **claim** | Declaring a half-suit and the exact location of all 6 of its cards. |
-| **void** | A claimed half-suit that scores for nobody. |
+| **awarded** | Who a resolved half-suit goes to. Every one goes to a team; none is ever discarded. |
 
 Rationale: "book" collides with the everyday meaning and with quartet games where a book is four of
 a kind. "Half-suit" is self-describing — it tells a beginner what the thing *is* the first time they
@@ -50,17 +50,17 @@ no `book` identifier anywhere in `lib/` or `src/`.
 | 10 | Miss | Turn passes to the player who was asked |
 | 11 | Claim timing | On your own turn only |
 | 12 | Claim content | Name the half-suit and the exact holder of **every** one of its 6 cards; every holder named must be on your own team |
-| 13 | Claim: correct | All six locations right, so your team scores the half-suit |
-| 14 | Claim: opponent holds at least 1 | **Opposing team** scores the half-suit, regardless of the other five locations |
-| 15 | Claim: own team holds all six, any location wrong | Half-suit is **void** — removed from play, nobody scores |
+| 13 | Claim: correct | All six locations right, so **your team is awarded** the half-suit |
+| 14 | Claim: wrong, for any reason | The **opposing team is awarded** it — whether an opponent held one of the six, or a card was placed with the wrong teammate |
+| 15 | No third outcome | Every resolved half-suit is awarded to a team. Nothing is ever discarded, so a drawn game is impossible |
 | 16 | Claim without holding | You may claim a half-suit while holding none of its cards |
-| 17 | After any claim | The claimant's turn **continues** (correct, opponent-scored, or void alike) |
+| 17 | After any claim | The claimant's turn **continues**, whichever team was awarded it |
 | 18 | Information | Card counts are public. Every ask and its result is public and stays in the on-screen log. Hidden card identities are never shown |
 | 19 | Out of cards (not via own claim) | You drop out: cannot ask, cannot be asked; play continues around you |
 | 20 | Out of cards via your own claim | You choose any teammate **with cards** and pass the turn to them |
 | 21 | Whole team out of cards | Play stops; the team **with** cards must claim every remaining half-suit — procedure in §5 |
-| 22 | Game end | All **9** half-suits resolved (scored or void) |
-| 23 | Winner | More half-suits wins. 9 is odd, so a clean game cannot tie — see §6 |
+| 22 | Game end | The moment a team is awarded its **5th** half-suit. Play stops immediately; any unresolved half-suits are never played |
+| 23 | Winner | The team that reaches 5. A draw cannot occur — see §6 |
 | 24 | Player count | 6 only |
 
 ---
@@ -144,14 +144,17 @@ The four gates a beginner must internalise, in the guide's words:
 You claim **for your team**. There is no way to name an opponent as a holder — if you believe an
 opponent holds one of the six, the move is to not claim.
 
-Resolution order (the public event reveals the **actual** holders in every case):
+Resolution is binary. The public event reveals the **actual** holders in either case.
 
-1. Any of the 6 cards actually held by the **opposing** team, so the **opposing team scores** it.
-2. Otherwise the claimant's team holds all six:
-   - all six locations correct, so the **claimant's team scores**;
-   - any location wrong, so it is **void** and nobody scores.
-3. The six cards leave every hand; the half-suit is marked resolved. The claimant's turn continues
-   (row 17) unless §5 applies. The game ends when all 9 are resolved.
+1. **All six locations correct** — the claimant's team is awarded the half-suit.
+2. **Anything else** — the opposing team is awarded it. There are two ways to be wrong and they
+   are treated identically: an opponent held one of the six, or the claimant's team held all six
+   but a card was placed with the wrong teammate. Close is not partial credit.
+3. The six cards leave every hand and the half-suit is marked resolved. The claimant's turn
+   continues (row 17) unless §5 applies.
+
+Because every resolved half-suit is awarded to somebody, the two scores always sum to the number
+resolved, and the game ends the moment either reaches 5.
 
 Claiming while holding none of the half-suit is legal (row 16) and is occasionally correct — if the
 public log has told you where all six sit, you can claim a half-suit you have never touched.
@@ -171,35 +174,42 @@ public log has told you where all six sit, you can claim a half-suit you have ne
   - If the turn belongs to the **empty** team, that player must `designate{to}` one opponent who has
     cards (phase `awaitDesignate`), and that player alone claims out the rest.
   - Endgame claims resolve exactly as in §4 — misplacing a card among your own teammates still
-    voids it.
-- Precedence: if a claim resolves the 9th half-suit the game is `finished` regardless of any pending
-  pass or designate. If a claimant empties both themselves and their whole team, `awaitDesignate`
+    hands the half-suit to the other side.
+- Precedence: if a claim takes a team to 5 the game is `finished` regardless of any pending pass
+  or designate. If a claimant empties both themselves and their whole team, `awaitDesignate`
   wins over `awaitPass`.
 
 ---
 
-## 6. Scoring and the tiebreaking 9th half-suit
+## 6. Scoring, the win condition, and the tiebreaking 9th half-suit
 
-Each resolved half-suit scores 1 for the team that won it. Void half-suits score for nobody.
-The team with more half-suits wins.
+Each resolved half-suit is worth 1 to the team it was awarded to. **The first team to reach 5 wins
+immediately** — play stops on the spot and any half-suits still on the table are never played.
 
-**Nine is odd on purpose.** In the standard 8-half-suit game 4–4 is a common and unsatisfying
-result. With nine, a game in which every half-suit is scored *cannot* tie — the closest result is
-5–4. `EIGHTS` is the half-suit that makes the count odd, which is why the club calls it the
-tiebreaking half-suit.
+Five of nine is an unbeatable majority, so nothing is decided by playing the rest out. A game can
+therefore finish 5–0, 5–1, 5–2, 5–3 or 5–4, having resolved between five and nine half-suits.
 
-> **Caveat, stated in the guide too:** a tie is still *arithmetically* possible if half-suits are
-> voided — for example 4–4 with one void. Voids are the only route to a draw. This is treated as a
-> genuine (rare) outcome, not swept under the rug.
+**A draw is impossible.** Two properties combine to guarantee it:
+
+1. Every resolved half-suit is awarded to a team (§4). Nothing is ever discarded, so the two scores
+   always sum to exactly the number resolved.
+2. Nine is odd. If all nine were somehow resolved the split would be 5–4, and in practice play stops
+   the instant someone reaches 5.
+
+**Nine is odd on purpose.** In the standard 8 half-suit game, 4–4 is a common and deflating result.
+Adding both jokers promotes the four 8s into a ninth half-suit, which makes the total odd and takes
+the drawn game off the table entirely. When the other eight split 4–4, `EIGHTS` decides the match —
+which is why the club calls it the tiebreaking half-suit.
 
 `EIGHTS` is dealt, asked for, and claimed exactly like the other eight. It has no special powers and
 is never held back. It is in the deal from the first card.
 
-> **Confirmed by the club, 2026-08-20.** All 54 cards are dealt. The 9th half-suit is formed by the
-> four 8s and the two jokers, and it acts as the tiebreaker when the score reaches 4–4. That is
-> exactly what this repo implements: `EIGHTS` is an ordinary half-suit, and because it makes the
-> total odd, a 4–4 score is always broken by whoever wins it. The tutorial's scripted game ends this
-> way on purpose — eight half-suits split 4–4, and the learner personally claims `EIGHTS` to win 5–4.
+> **Confirmed by the club, 2026-08-21.** All 54 cards are dealt. The 9th half-suit is formed by the
+> four 8s and the two jokers, and it acts as the tiebreaker when the score reaches 4–4. The game
+> ends when one team has won its 5th half-suit. An incorrect declaration — for any reason — awards
+> the half-suit to the opposing team; there is no void outcome and therefore no way to draw.
+> The tutorial's scripted game ends this way on purpose: eight half-suits split 4–4, and the learner
+> personally claims `EIGHTS` to win 5–4.
 
 ---
 
@@ -209,8 +219,8 @@ is never held back. It is in the deal from the first card.
    Seat 0 claims with exactly those locations, so Team A scores LOW-S and seat 0 keeps the turn.
 2. **Opponent holds one.** As above but 7S is actually at seat 1 (Team B), so **Team B** scores
    LOW-S, even though Team A had five of the six.
-3. **Misplacement voids.** Team A holds all six but seat 0 swaps the stated locations of 4S and 6S,
-   so LOW-S is **void**, nobody scores, and seat 0 keeps the turn.
+3. **Misplacement loses it.** Team A holds all six but seat 0 swaps the stated locations of 4S and
+   6S. The declaration is wrong, so **Team B is awarded** LOW-S. Seat 0 keeps the turn.
 4. **Claim-out pass.** Seat 0's correct claim uses their last 2 cards, so seat 0 must pass to seat 2
    or 4, whichever has cards. Passing to a cardless teammate is `PASS_TARGET_OUT`.
 5. **Endgame designation.** Seat 0's claim empties all of Team A while Team B still has cards, so
@@ -218,5 +228,7 @@ is never held back. It is in the deal from the first card.
 6. **The jokers are ordinary.** Seat 0 holds 8D and asks seat 3 for `RJ`. Legal: `RJ` is in the
    `EIGHTS` half-suit and seat 0 holds 8D, which is in the same half-suit. Holding a joker likewise
    licenses asking for any 8.
-7. **Tiebreaker.** Eight half-suits resolve 4–4 and `EIGHTS` is the last one standing; whoever wins
-   it wins the game 5–4.
+7. **Tiebreaker.** Eight half-suits resolve 4–4 and `EIGHTS` is the last one standing; whoever is
+   awarded it reaches 5 and wins the game 5–4.
+8. **Early finish.** Team B is awarded its 5th half-suit while four remain unresolved. The game is
+   over at 5–0 through 5–3; the remaining four are never played and stay unresolved forever.

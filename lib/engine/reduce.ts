@@ -23,6 +23,7 @@ import type {
 } from './types.ts'
 import {
   ALL_HALF_SUITS,
+  HALF_SUITS_TO_WIN,
   cardHalfSuit,
   halfSuitCards,
   isCard,
@@ -198,16 +199,12 @@ function reduceClaim(
     if (assignments[c] !== holder) allCorrect = false
   }
 
+  // RULES.md §4: the declaration is either exactly right, or it is wrong. Wrong for ANY
+  // reason — an opponent held one of the six, or a card was placed with the wrong teammate —
+  // awards the half-suit to the opposing team. There is no third outcome.
   const opposing = otherTeam(claimerTeam)
-  const outcome: Outcome = opponentHolds
-    ? opposing === 0
-      ? 'team0'
-      : 'team1'
-    : allCorrect
-      ? claimerTeam === 0
-        ? 'team0'
-        : 'team1'
-      : 'void'
+  const awarded: Team = opponentHolds || !allCorrect ? opposing : claimerTeam
+  const outcome: Outcome = awarded === 0 ? 'team0' : 'team1'
 
   const result: HalfSuitResult = {
     halfSuit,
@@ -218,8 +215,7 @@ function reduceClaim(
   }
   const halfSuits = { ...state.halfSuits, [halfSuit]: result }
   const score: [number, number] = [state.score[0], state.score[1]]
-  if (outcome === 'team0') score[0] += 1
-  else if (outcome === 'team1') score[1] += 1
+  score[awarded] += 1
 
   // The six cards leave every hand; note any seat emptied by the removal.
   const cardSet = new Set<Card>(cards)
@@ -232,9 +228,15 @@ function reduceClaim(
   }
 
   // Post-claim cascade (§5 precedence).
-  if (Object.keys(halfSuits).length === TOTAL_HALF_SUITS) {
-    const winner: 0 | 1 | 'tie' = score[0] > score[1] ? 0 : score[1] > score[0] ? 1 : 'tie'
-    events.push({ type: 'game_over', score: [score[0], score[1]], winner })
+  //
+  // The game stops the instant a team reaches five (RULES.md row 22). Five of nine is an
+  // unbeatable majority, so any half-suits still on the table are simply never played. The
+  // all-resolved check below is a belt-and-braces guard: with no void outcome, nine resolved
+  // half-suits always contain a team on five, so it should be unreachable.
+  const winner: Team | null = score[0] >= HALF_SUITS_TO_WIN ? 0 : score[1] >= HALF_SUITS_TO_WIN ? 1 : null
+  if (winner !== null || Object.keys(halfSuits).length === TOTAL_HALF_SUITS) {
+    const decided: Team = winner ?? (score[0] >= score[1] ? 0 : 1)
+    events.push({ type: 'game_over', score: [score[0], score[1]], winner: decided })
     return accept(state, { hands, halfSuits, score, phase: 'finished' }, events)
   }
   if (state.phase === 'endgame') {

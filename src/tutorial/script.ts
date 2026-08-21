@@ -113,7 +113,8 @@ export const SCRIPT: readonly Step[] = [
       'The deck is 54 cards: a full pack plus both jokers. Everyone gets nine. The cards split ' +
       'into nine sets of six. Each set is a half-suit. Every suit makes two: the low half ' +
       '(2 to 7) and the high half (9 to Ace). That is eight. The ninth is the four 8s plus the ' +
-      'two jokers. Each half-suit is worth one point, and five points wins.',
+      'two jokers. Each half-suit is worth one point. The first team to win five ends the game ' +
+      'on the spot.',
   },
 
   /* -------------------------------------------------------- act 2: the ask --- */
@@ -305,9 +306,9 @@ export const SCRIPT: readonly Step[] = [
         { card: '7S', because: 'You took it from Dana one ask ago.' },
       ],
       whyWrong:
-        'That is the trap. Your team held all six, but one was in the wrong hand. The half-suit is ' +
-        'now void: it leaves the game and nobody scores it. A claim is not "do we have these". ' +
-        'It is "do I know where they are".',
+        'That is the trap. Your team held all six, but one was in the wrong hand. So Red is ' +
+        'awarded the half-suit. A claim is not "do we have these". It is "do I know exactly ' +
+        'where they are".',
       reveal:
         'All six right. Blue scores it and the cards leave every hand. And it is still your ' +
         'turn. A claim never ends your turn.',
@@ -315,15 +316,15 @@ export const SCRIPT: readonly Step[] = [
     expect: { event: 'claim', outcome: 'team0', turnAfter: 0, scoreAfter: [1, 0] },
   },
   {
-    id: 'three-outcomes',
+    id: 'two-outcomes',
     act: 4,
     mode: 'still',
     actions: [],
-    title: 'A claim ends in one of three ways',
+    title: 'A claim is either right or wrong',
     body:
-      'You just saw the good one. The other two matter more. If an opponent holds even one of ' +
-      'the six, the other team scores it. If your team holds all six but you name one wrong ' +
-      'hand, nobody scores it. Right cards, wrong hands, no points.',
+      'You just saw a right one. There is only one other result. If an opponent holds even one ' +
+      'of the six, the other team is awarded it. If your team holds all six but you name the ' +
+      'wrong hand for one, the other team is awarded it too. Close is not good enough.',
   },
 
   /* --------------------------------------------------------- act 5: winning --- */
@@ -411,8 +412,8 @@ export const SCRIPT: readonly Step[] = [
         { card: 'BJ', because: 'Kofi took the black joker on his next ask.' },
       ],
       whyWrong:
-        'Be careful. This one wins the game. Put a card in the wrong hand and the half-suit is ' +
-        'void. The score stays 4–4 and the game ends in a draw.',
+        'Be careful. This one wins the game. Name one wrong hand and Red is awarded the ' +
+        'half-suit instead. That takes them to five, and they win.',
       reveal:
         'All six right. Blue takes Eights & Jokers and wins 5–4. The ninth half-suit broke the ' +
         'tie, which is exactly what it is for.',
@@ -427,8 +428,8 @@ export const SCRIPT: readonly Step[] = [
     title: 'Why the 8s and jokers are in',
     body:
       'The standard game removes the four 8s and plays eight half-suits, so 4–4 draws are ' +
-      'common. Adding both jokers makes a ninth half-suit, so the total is odd. A 4–4 score ' +
-      'always gets broken. Only a void can still cause a draw.',
+      'common. Adding both jokers makes a ninth. Every half-suit always goes to a team, and ' +
+      'nine is odd, so someone always reaches five first. A draw cannot happen.',
   },
 
   /* ------------------------------------------------------- act 6: reference --- */
@@ -440,8 +441,8 @@ export const SCRIPT: readonly Step[] = [
     title: 'That is the whole game',
     body:
       'Ask an opponent for one card from a half-suit you hold. Hit and you go again. Miss and ' +
-      'the turn is theirs. Claim a half-suit by naming who holds all six cards. Five of nine ' +
-      'wins. The rest is listening.',
+      'the turn is theirs. Claim a half-suit by naming who holds all six cards. First team to ' +
+      'five wins. The rest is listening.',
   },
 ]
 

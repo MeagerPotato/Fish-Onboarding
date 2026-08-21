@@ -24,9 +24,9 @@ one will stall the table.
 | 6 | Hit keeps the turn; miss gives it away | Act 2 |
 | 7 | Every ask and result is public — that is the game | Act 3, checkpoint 2 |
 | 8 | A claim names the half-suit *and* all six exact holders | Act 4, checkpoint 3 |
-| 9 | Three claim outcomes: score, opponents score, void | Act 4 |
+| 9 | Two claim outcomes: exactly right, or the opponents are awarded it | Act 4 |
 | 10 | Running out of cards, and the whole-team-out endgame | Act 5 |
-| 11 | The ninth half-suit and why draws are almost impossible | Act 5, checkpoint 4 |
+| 11 | The ninth half-suit, why the game stops at 5, and why a draw is impossible | Act 5, checkpoint 4 |
 
 Deliberately **not** taught: strategy, counting conventions, signalling, when to claim on
 thin information. Those belong in a second document. Ten minutes buys the rules and one good
@@ -41,7 +41,7 @@ habit — listening to the log — and nothing else.
 | 1 | The table | Orientation. What you are looking at, what you are trying to win. |
 | 2 | The ask | The core loop, and the four legality gates, learned by being caught out. |
 | 3 | Reading the table | The realisation that the public log is the actual game. |
-| 4 | The claim | How a half-suit is won, and the three ways it ends. |
+| 4 | The claim | How a half-suit is won, and the two ways it can end. |
 | 5 | Winning | Running dry, the endgame, and the ninth half-suit deciding it. |
 | 6 | Take it to the table | The whole game on one printable card. |
 
@@ -61,13 +61,13 @@ Three design rules govern every one of them:
    constraint that drove the hand-authored deal in `src/tutorial/table.ts` — a checkpoint you
    can only guess at teaches guessing.
 3. **A wrong answer teaches more than a right one.** Each wrong option carries the specific
-   reason it fails, and a wrong claim shows exactly what voiding costs.
+   reason it fails, and a wrong claim shows exactly what handing it to the opponents costs.
 
 | # | Step | Teaches | How the learner can know |
 |---|---|---|---|
 | 1 | Which ask is legal? | The four gates | Three options each break one visible gate |
 | 2 | Which ask is certain? | The log is information | Dana publicly took the 3♠ from your hand |
-| 3 | Claim the low spades | The claim mechanic, and void | Five in hand; Mia's 6♠ is deducible from her earlier ask |
+| 3 | Claim the low spades | The claim mechanic, and the cost of being wrong | Five in hand; Mia's 6♠ is deducible from her earlier ask |
 | 4 | Claim Eights & Jokers | The ninth half-suit, for the game | Kofi's 8♠ is the only card left after his two joker hits |
 
 Checkpoint 4 is the payoff: the score is 4–4, the learner personally makes the winning claim,

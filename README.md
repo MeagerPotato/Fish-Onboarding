@@ -92,10 +92,14 @@ Nine half-suits, not the standard eight:
 | Deck | 52 + both jokers = **54** |
 | Deal | 6 players, **9 cards each** |
 | Half-suits | Low (2–7) and High (9–A) of each suit = 8, plus **Eights & Jokers** = 9 |
-| To win | 5 of 9 |
+| To win | First team awarded **5** half-suits. Play stops immediately |
 
 Nine is odd on purpose. In the standard eight half-suit game a 4–4 draw is common and
-deflating; with nine, a game in which every half-suit is won cannot tie. Only a *voided*
-half-suit can still produce a draw — which is one more reason to claim carefully.
+deflating. Here every resolved half-suit is awarded to a team — a wrong declaration hands it to
+the opponents rather than discarding it — so the scores always sum to the number resolved, and
+with nine on the table **a draw cannot happen.**
+
+The game stops the moment a team is awarded its 5th half-suit. Any still on the table are never
+played, so a finished game shows anywhere from five to nine resolved.
 
 Full rules, including claim resolution and the endgame, are in [RULES.md](RULES.md).

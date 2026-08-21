@@ -8,6 +8,7 @@
 import {
   ALL_HALF_SUITS,
   ALL_SEATS,
+  HALF_SUITS_TO_WIN,
   halfSuitCards,
   seatTeam,
   type Card,
@@ -68,7 +69,8 @@ export function handVM(s: GameState, seat: Seat = YOU): HandGroupVM[] {
 
 /* ----------------------------------------------------------------- score --- */
 
-export type HalfSuitState = 'open' | 'team0' | 'team1' | 'void'
+/** A half-suit is either still in play or awarded to a team. There is no void state. */
+export type HalfSuitState = 'open' | 'team0' | 'team1'
 
 export interface HalfSuitVM {
   id: HalfSuitId
@@ -98,21 +100,21 @@ export function halfSuitsVM(s: GameState): HalfSuitVM[] {
 export interface ScoreVM {
   blue: number
   red: number
-  /** Half-suits neither team scored. */
-  voided: number
+  /** Half-suits still on the table. Play stops at five, so these may never be played. */
   remaining: number
   halfSuits: HalfSuitVM[]
-  /** Set only once the game is over. */
-  winner: 'blue' | 'red' | 'tie' | null
+  /** Set only once the game is over. A draw is not reachable, so this is never a tie. */
+  winner: 'blue' | 'red' | null
+  /** How many more half-suits the leading team needs. 0 once the game is won. */
+  toWin: number
 }
 
 export function scoreVM(s: GameState): ScoreVM {
   const halfSuits = halfSuitsVM(s)
-  const voided = halfSuits.filter((h) => h.state === 'void').length
   const remaining = halfSuits.filter((h) => h.state === 'open').length
-  const winner =
-    s.phase !== 'finished' ? null : s.score[0] > s.score[1] ? 'blue' : s.score[1] > s.score[0] ? 'red' : 'tie'
-  return { blue: s.score[0], red: s.score[1], voided, remaining, halfSuits, winner }
+  const winner = s.phase !== 'finished' ? null : s.score[0] > s.score[1] ? 'blue' : 'red'
+  const toWin = Math.max(0, HALF_SUITS_TO_WIN - Math.max(s.score[0], s.score[1]))
+  return { blue: s.score[0], red: s.score[1], remaining, halfSuits, winner, toWin }
 }
 
 /* ------------------------------------------------------------------- log --- */
@@ -173,12 +175,15 @@ export function logVM(s: GameState): LogEntryVM[] {
       case 'claim': {
         const who = subject(e.claimer)
         const name = halfSuitName(e.halfSuit)
-        const text =
-          e.outcome === 'void'
-            ? `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — but a card was placed in the wrong hand. Void: nobody scores it.`
-            : seatTeam(e.claimer) === (e.outcome === 'team0' ? 0 : 1)
-              ? `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — all six correct.`
-              : `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — but the other team held one of the six, so they score it.`
+        const wonIt = seatTeam(e.claimer) === (e.outcome === 'team0' ? 0 : 1)
+        const misplaced = Object.entries(e.actualHolders).some(
+          ([card, holder]) => e.assignments[card as Card] !== holder,
+        )
+        const text = wonIt
+          ? `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — all six correct.`
+          : misplaced && !Object.values(e.actualHolders).some((h) => seatTeam(h) !== seatTeam(e.claimer))
+            ? `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — but named the wrong hand for a card, so the other team is awarded it.`
+            : `${who} ${verb(e.claimer, 'claim', 'claims')} ${name} — but the other team held one of the six, so they are awarded it.`
         return {
           id,
           kind: e.type,
@@ -233,10 +238,7 @@ export function logVM(s: GameState): LogEntryVM[] {
         return {
           id,
           kind: e.type,
-          text:
-            e.winner === 'tie'
-              ? `Game over — ${e.score[0]}–${e.score[1]}. A draw, which only voided half-suits can produce.`
-              : `Game over — ${e.winner === 0 ? 'Blue' : 'Red'} wins it ${Math.max(...e.score)}–${Math.min(...e.score)}.`,
+          text: `Game over — ${e.winner === 0 ? 'Blue' : 'Red'} wins it ${Math.max(...e.score)}–${Math.min(...e.score)}.`,
           cards: [],
           actor: null,
           hit: null,

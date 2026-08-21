@@ -101,6 +101,12 @@ export function seatTeam(s: Seat): Team {
 
 export const ALL_SEATS: readonly Seat[] = [0, 1, 2, 3, 4, 5]
 
+/**
+ * Half-suits needed to win. The game stops the moment a team reaches this (RULES.md row 22).
+ * Five of nine is an unbeatable majority, so nothing is decided by playing the rest out.
+ */
+export const HALF_SUITS_TO_WIN = 5
+
 /** The three seats of a team, ascending. */
 export function teamSeats(t: Team): readonly Seat[] {
   return t === 0 ? [0, 2, 4] : [1, 3, 5]

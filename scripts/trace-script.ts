@@ -29,7 +29,7 @@ function describe(e: PublicEvent): string {
     case 'endgame':
       return `ENDGAME — team ${e.claimingTeam} must claim out`
     case 'game_over':
-      return `GAME OVER — ${e.score[0]}-${e.score[1]}, winner ${e.winner === 'tie' ? 'nobody (tie)' : `team ${e.winner}`}`
+      return `GAME OVER — ${e.score[0]}-${e.score[1]}, winner team ${e.winner}`
   }
 }
 

@@ -32,7 +32,12 @@ export type Team = 0 | 1
 
 export type Phase = 'playing' | 'awaitPass' | 'awaitDesignate' | 'endgame' | 'finished'
 
-export type Outcome = 'team0' | 'team1' | 'void'
+/**
+ * Who was awarded a half-suit. There is no third option: an incorrect declaration — for any
+ * reason — awards the half-suit to the opposing team (RULES.md §4). Every half-suit that
+ * resolves goes to a team, which is what makes a drawn game impossible.
+ */
+export type Outcome = 'team0' | 'team1'
 
 /** Outcome record of a resolved (scored or void) half-suit. */
 export interface HalfSuitResult {
@@ -60,7 +65,7 @@ export type PublicEvent =
   | { type: 'designate'; from: Seat; to: Seat }
   | { type: 'player_out'; seat: Seat }
   | { type: 'endgame'; claimingTeam: Team }
-  | { type: 'game_over'; score: [number, number]; winner: 0 | 1 | 'tie' }
+  | { type: 'game_over'; score: [number, number]; winner: Team }
 
 export interface GameState {
   phase: Phase

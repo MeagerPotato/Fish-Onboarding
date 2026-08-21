@@ -24,6 +24,11 @@ ordinary one, and because it makes the total odd it is what breaks a 4–4 score
 game ends exactly that way, so **the ninth half-suit is a visual motif, not a footnote** — see
 `[data-ninth]` below.
 
+Two rules were confirmed by the project owner on 2026-08-21 and are reflected throughout:
+**the game ends the instant a team is awarded its 5th half-suit** (unresolved half-suits are
+simply never played), and **there is no void outcome** — a wrong declaration, for any reason,
+awards the half-suit to the opposing team. A drawn game is therefore impossible.
+
 ### Two copy rules
 
 You are not writing the teaching copy — that is finished and test-locked. But you will add
@@ -152,7 +157,7 @@ hooks. None of them has an opinion about how it looks.
 | Component | Renders | Key hooks |
 |---|---|---|
 | `AppShell` | The five zones | `[data-zone]` |
-| `ScoreRail` | Score + all nine half-suit chips | `[data-state="open\|team0\|team1\|void"]`, `[data-ninth]` |
+| `ScoreRail` | Score + all nine half-suit chips | `[data-state="open\|team0\|team1"]`, `[data-ninth]` |
 | `TableView` | Six seats, counts, whose turn | `[data-active]`, `[data-out]`, `[data-askable]`, `[data-team]` |
 | `HandFan` | The learner's hand, grouped by half-suit | `[data-half-suit]`, `[data-highlighted]` |
 | `Annotation` | Title and body for the step | `[data-mode="still\|beat\|montage"]` |
@@ -172,8 +177,11 @@ hooks. None of them has an opinion about how it looks.
   is odd on purpose, and the rail is where a learner should *see* that.
 - **Hit versus miss in the log.** `[data-hit="true|false"]` is the single most-read piece of
   information in the whole game.
-- **The void outcome.** `[data-outcome="void"]` is the counter-intuitive rule the guide exists
-  to teach. It should not look like either a win or a loss.
+- **A claim lost to the opponents.** `[data-outcome]` on a log entry names the team awarded the
+  half-suit. The counter-intuitive case is a claim by *your* side that the *other* side is
+  awarded — it must read as a loss you caused, not as a neutral event.
+- **Half-suits that were never played.** The game stops the instant a team reaches five, so a
+  finished board can still show open chips. They must not read as "pending" once it is over.
 - **The cheat sheet must print.** It is the artefact people screenshot and leave next to the
   deck.
 

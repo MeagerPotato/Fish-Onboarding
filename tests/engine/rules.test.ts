@@ -215,13 +215,24 @@ describe('claim resolution (RULES.md §4, §7.1-7.3)', () => {
     expect(after.turn).toBe(0)
   })
 
-  it('7.3 — the right cards in the wrong hands voids it, and nobody scores', () => {
+  it('7.3 — the right cards in the wrong hands awards it to the opponents', () => {
+    // Team A genuinely holds all six, but 4S and 6S are placed with the wrong teammates.
+    // There is no void outcome: a wrong declaration, for any reason, hands it over.
     const s = game(teamAHoldsLowS)
     const swapped = { ...correct, '4S': 4, '6S': 2 } as Record<Card, Seat>
     const after = must(reduce(s, { type: 'claim', seat: 0, halfSuit: 'LOW-S', assignments: swapped }))
-    expect(after.halfSuits['LOW-S']?.outcome).toBe('void')
-    expect(after.score).toEqual([0, 0])
+    expect(after.halfSuits['LOW-S']?.outcome).toBe('team1')
+    expect(after.score).toEqual([0, 1])
     expect(after.turn).toBe(0)
+  })
+
+  it('a single misplaced card is enough to lose the half-suit', () => {
+    const s = game(teamAHoldsLowS)
+    // Five of six correct; only 6S is wrong.
+    const oneWrong = { ...correct, '6S': 2 } as Record<Card, Seat>
+    const after = must(reduce(s, { type: 'claim', seat: 0, halfSuit: 'LOW-S', assignments: oneWrong }))
+    expect(after.halfSuits['LOW-S']?.outcome).toBe('team1')
+    expect(after.score).toEqual([0, 1])
   })
 
   it('always reveals the true holders, whatever the outcome', () => {
@@ -417,18 +428,49 @@ describe('scoring and the tiebreaking ninth half-suit (RULES.md §6, §7.7)', ()
     expect(final.log.at(-1)).toMatchObject({ type: 'game_over', winner: 1 })
   })
 
-  it('a void is the only route to a draw (RULES.md §6 caveat)', () => {
-    const s = toFourAll()
-    // Seat 0 holds 2C/3C/4C and seat 1 the rest, so no void is reachable here; construct
-    // the void directly by giving Team A all of LOW-C and misplacing one card.
+  it('every resolved half-suit is awarded to someone, so a draw cannot happen', () => {
+    // Misplacing among your own team used to void. It now hands the half-suit over, which
+    // means the awarded total always equals the resolved total and 4-4-with-a-gap is gone.
     const v = game({ 'LOW-C': [0, 0, 0, 2, 2, 4] })
     const wrong = { ...trueAssignments(v, 'LOW-C'), '2C': 2, '5C': 0 } as Record<Card, Seat>
     const after = must(reduce(v, { type: 'claim', seat: 0, halfSuit: 'LOW-C', assignments: wrong }))
-    expect(after.halfSuits['LOW-C']?.outcome).toBe('void')
-    expect(after.score).toEqual([0, 0])
-    // With one half-suit void, the remaining eight can split 4-4 and tie.
-    expect(unresolvedHalfSuits(after)).toHaveLength(8)
-    expect(s.score[0] + s.score[1]).toBe(8)
+    expect(after.halfSuits['LOW-C']?.outcome).toBe('team1')
+    expect(after.score[0] + after.score[1]).toBe(1)
+    expect(ALL_HALF_SUITS.filter((h) => after.halfSuits[h])).toHaveLength(1)
+  })
+
+  it('stops the instant a team reaches five, leaving the rest unplayed', () => {
+    // A team holds 27 cards, so it can never hold five whole half-suits at once. Team B
+    // instead owns four outright and shares a fifth, and seat 0 hands all five over by
+    // claiming them badly. A claim never ends the turn, so seat 0 can do it in one go.
+    let s = game({
+      'LOW-C': [0, 0, 0, 1, 3, 5],
+      'LOW-D': [1, 1, 3, 3, 5, 5],
+      'LOW-H': [1, 1, 3, 3, 5, 5],
+      'HIGH-D': [1, 1, 3, 3, 5, 5],
+      'HIGH-S': [1, 1, 3, 3, 5, 5],
+    })
+
+    for (const h of ['LOW-D', 'LOW-H', 'HIGH-D', 'HIGH-S'] as HalfSuitId[]) {
+      s = must(reduce(s, { type: 'claim', seat: 0, halfSuit: h, assignments: allTo(h, 0) }))
+      expect(s.turn, 'a claim must never end the turn').toBe(0)
+      expect(s.phase).toBe('playing')
+    }
+    expect(s.score).toEqual([0, 4])
+
+    // Seat 0 holds three low clubs; the other three are spread across Team B, so this is
+    // awarded to them and takes them to five.
+    const final = must(reduce(s, { type: 'claim', seat: 0, halfSuit: 'LOW-C', assignments: allTo('LOW-C', 0) }))
+    expect(final.score).toEqual([0, 5])
+    expect(final.phase).toBe('finished')
+    expect(final.log.at(-1)).toMatchObject({ type: 'game_over', winner: 1, score: [0, 5] })
+
+    // Four half-suits were never played, and nothing further is legal.
+    expect(unresolvedHalfSuits(final)).toHaveLength(4)
+    expect(code(final, { type: 'claim', seat: 0, halfSuit: 'LOW-S', assignments: allTo('LOW-S', 0) })).toBe(
+      'WRONG_PHASE',
+    )
+    expect(code(final, { type: 'ask', seat: 0, target: 1, card: '5C' })).toBe('WRONG_PHASE')
   })
 
   it('needs all nine resolved before it can finish', () => {
