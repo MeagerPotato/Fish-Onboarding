@@ -8,7 +8,25 @@
 
  *
  * See CODEX_HANDOFF.md for the full contract.
+ *
+ * ---------------------------------------------------------------------------------------
+ * The one wrapper here is the column inside [data-zone="annotation"]: the step's words,
+ * then the checkpoint that belongs to them. The zone around it is a fixed band that scrolls;
+ * this is the thing that scrolls inside it, so all of its own spacing is block padding
+ * rather than margin — a margin would collapse out of the scrollport at the bottom.
  */
 
 .annotationZone {
+  display: grid;
+  align-content: start;
+  gap: var(--dg-u5);
+  /* Measure, not a width: 46–52ch is the readable band (DESIGN_INSPIRATION §11.8). */
+  max-inline-size: 52ch;
+  margin-inline: auto;
+  padding-block: var(--dg-u4) var(--dg-u5);
+}
+
+/* Grid items default to a content-based minimum; a wide checkpoint row would overflow. */
+.annotationZone > * {
+  min-inline-size: 0;
 }

@@ -1,24 +1,129 @@
 /*
- * Annotation — styling surface.
- *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * Annotation — the teaching text, and the most-read element in the product.
  *
  * Styling hooks available on these elements (set by the component, read by you):
  *   [data-mode="still|beat|montage"]
  *   [data-step="<step id>"]
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * Three decisions here are load-bearing rather than taste:
+ *
+ * 1. Measure is capped in `ch`, never px (DESIGN_INSPIRATION §6.4.5), so the line length holds
+ *    at every width the shell hands us. AppShell owns the horizontal inset; this file owns the
+ *    vertical rhythm, because the annotation is the one zone that flexes (MOBILE_SPEC §4.2).
+ * 2. The heading takes focus on every step change — that is how the step is announced. Its
+ *    focus state therefore has to read as "you are here", not as an error. See `.title`.
+ * 3. The step entrance. React reuses these exact DOM nodes across steps, so neither
+ *    `@starting-style` nor a plain animation would ever restart: nothing is ever inserted.
+ *    Alternating `animation-name` between two identical keyframes does force the restart, with
+ *    no JS and no .tsx change — steps at an odd index take the B name, so consecutive steps
+ *    always differ. Distance and duration are tokens, so reduced motion zeroes it for free.
  */
 
 .annotation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dg-u1);
+  min-block-size: 0;
+  padding-block: var(--dg-u3) var(--dg-u4);
 }
 
-.body {
-}
-
+/*
+ * Mirrors `.dg-eyebrow` in index.css: uppercase plus tracking reads as a mono label without
+ * loading a mono face. The accent tick is the act marker — accent means "here", never
+ * decoration — and it is the cheapest "designed" signal in the reference (§11.16).
+ */
 .eyebrow {
+  font-size: var(--dg-label);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  text-transform: uppercase;
+  color: var(--dg-soft);
+}
+
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  inline-size: var(--dg-u3);
+  margin-inline-end: var(--dg-u2);
+  border-block-start: var(--dg-s-strong) solid var(--dg-accent-line);
+  vertical-align: middle;
 }
 
 .title {
+  max-inline-size: 22ch;
+  font-size: var(--dg-display);
+  font-weight: 500;
+  /* Line-height is a step function: 1.14 display, 1.55 body. There is no 1.3 (§6.4.1). */
+  line-height: 1.14;
+  /* Tracking is signed by size — negative on display, positive on the eyebrow (§6.4.2). */
+  letter-spacing: calc(var(--dg-track) * -0.25);
+  text-wrap: balance;
+  color: var(--dg-ink);
+}
+
+/*
+ * Focus arrives here on every step change, so a tight alarm ring would fire 19 times a
+ * session. Instead the global 3px accent ring is pushed clear of the letterforms and the gap
+ * is filled with the accent tint, so it frames the new step as a plate. Accent already means
+ * "this is the current thing" everywhere else in the system; nothing here is red, thin or
+ * jittery. Width and colour are inherited from index.css, so the ring never gets weaker.
+ */
+.title:focus-visible {
+  border-radius: var(--dg-r-lg);
+  outline-offset: var(--dg-u2);
+  background: var(--dg-accent-tint);
+  box-shadow: 0 0 0 var(--dg-u2) var(--dg-accent-tint);
+}
+
+.body {
+  max-inline-size: 52ch;
+  margin-block-start: var(--dg-u2);
+  line-height: 1.55;
+  text-wrap: pretty;
+  color: var(--dg-muted);
+}
+
+.eyebrow,
+.title,
+.body {
+  animation: stepIn var(--dg-slow) var(--dg-ease) both;
+}
+
+/* 60ms apart: slower than a structural wipe, faster than a headline. A reading beat. */
+.title {
+  animation-delay: calc(var(--dg-fast) / 2);
+}
+
+.body {
+  animation-delay: var(--dg-fast);
+}
+
+/* The odd-indexed steps. Adjacent steps never share a name, so the entrance always replays. */
+.annotation:is(
+    [data-step='the-nine'],
+    [data-step='cp1'],
+    [data-step='the-miss'],
+    [data-step='partners-work'],
+    [data-step='close-the-set'],
+    [data-step='two-outcomes'],
+    [data-step='forced-miss'],
+    [data-step='endgame'],
+    [data-step='why-nine']
+  )
+  :is(.eyebrow, .title, .body) {
+  animation-name: stepInB;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    translate: 0 var(--dg-rise-zone);
+  }
+}
+
+@keyframes stepInB {
+  from {
+    opacity: 0;
+    translate: 0 var(--dg-rise-zone);
+  }
 }

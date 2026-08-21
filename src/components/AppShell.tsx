@@ -14,6 +14,11 @@ import type { ReactNode } from 'react'
 import s from './AppShell.module.css'
 
 export interface AppShellProps {
+  /**
+   * Layout mode. `claim` tells the shell that the annotation zone is holding a six-row
+   * claim sheet and needs the room — see the note in AppShell.module.css.
+   */
+  mode?: 'default' | 'claim'
   header: ReactNode
   table: ReactNode
   annotation: ReactNode
@@ -23,9 +28,9 @@ export interface AppShellProps {
   overlay?: ReactNode
 }
 
-export function AppShell({ header, table, annotation, hand, nav, overlay }: AppShellProps) {
+export function AppShell({ mode = 'default', header, table, annotation, hand, nav, overlay }: AppShellProps) {
   return (
-    <div className={s.shell} data-testid="app-shell">
+    <div className={s.shell} data-testid="app-shell" data-mode={mode}>
       <header className={s.header} data-zone="header">
         {header}
       </header>

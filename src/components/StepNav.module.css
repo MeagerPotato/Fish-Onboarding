@@ -1,34 +1,131 @@
 /*
- * StepNav — styling surface.
- *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * StepNav — Back, progress, Next. One row, inside the 64px nav zone (MOBILE_SPEC §4.6).
  *
  * Styling hooks available on these elements (set by the component, read by you):
  *   progressFill uses an inline inline-size percentage — style the track, not the width
+ *   [data-blocked="true"] on .next while a checkpoint is unanswered
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * `nav-next` carries `aria-disabled`, never `disabled`, so it keeps its place in the tab
+ * order and a keyboard user is never stranded. `.next:disabled` would therefore match
+ * nothing; `[data-blocked='true']` is the state (CODEX_HANDOFF §4.7).
  */
 
-.back {
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--dg-node-gap);
 }
 
-.nav {
+.back,
+.next {
+  border-radius: var(--dg-r-md);
+  font-size: var(--dg-name);
+  font-weight: 500;
+  /* Kills the 300ms double-tap-zoom delay (MOBILE_SPEC §6.7). */
+  touch-action: manipulation;
+  transition:
+    background var(--dg-fast) var(--dg-ease),
+    border-color var(--dg-fast) var(--dg-ease),
+    color var(--dg-fast) var(--dg-ease),
+    scale var(--dg-fast) var(--dg-ease);
+}
+
+/* The 3.5% squash is the only confirmation a finger gets; --dg-press is 1 when motion is off. */
+.back:active,
+.next:active {
+  scale: var(--dg-press);
+}
+
+/* Narrower than Next on purpose: it is the secondary move, and the middle needs the room. */
+.back {
+  padding-inline: var(--dg-u3);
+  /* Transparent, not absent, so Back and Next sit on the same optical baseline. */
+  border: var(--dg-s-line) solid transparent;
+  color: var(--dg-muted);
+}
+
+/* Genuinely disabled: it is the first step, and there is nothing to explain. */
+.back:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .next {
+  order: 1;
+  padding-inline: var(--dg-u5);
+  min-inline-size: calc(var(--dg-node-min) * 2);
+  border: var(--dg-s-line) solid var(--dg-accent-line);
+  background: var(--dg-accent-tint);
+  color: var(--dg-accent-ink);
 }
 
+/*
+ * Blocked: still focusable, still shows the global focus ring, but the accent is withdrawn —
+ * accent means "do this", and right now it is not the thing to do. The state is carried by
+ * border *style* as well as colour, so it survives a monochrome screen.
+ */
+.next[data-blocked='true'] {
+  border-color: var(--dg-rule);
+  border-style: dashed;
+  background: var(--dg-paper-2);
+  color: var(--dg-soft);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .back:hover:enabled {
+    color: var(--dg-ink);
+  }
+
+  .next:hover:not([data-blocked]) {
+    border-color: var(--dg-accent-ink);
+  }
+}
+
+/*
+ * Takes the slack, but keeps its automatic min-content floor: on the four checkpoint steps the
+ * blocked reason competes for this row, and a fraction that has been squeezed until it wraps
+ * is worse than a short bar. The numerals are the information; the bar reinforces them.
+ */
 .progress {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--dg-u1);
 }
 
-.progressFill {
-}
-
+/* nowrap is what gives .progress its floor: a fraction broken over two lines is not a fraction. */
 .progressText {
+  font-size: var(--dg-label);
+  font-weight: 600;
+  letter-spacing: var(--dg-track);
+  white-space: nowrap;
+  color: var(--dg-soft);
 }
 
 .progressTrack {
+  position: relative;
+  inline-size: 100%;
+  block-size: var(--dg-u1);
+  border-radius: var(--dg-r-pill);
+  background: var(--dg-paper-2);
+  overflow: hidden;
+}
+
+/*
+ * The width is written inline by the component. Transitioning `inline-size` is a deliberate,
+ * argued exception to "never animate width": the fill is out of flow, has no children and no
+ * in-flow siblings and is 4px tall, so the only layout it can dirty is its own — once per
+ * step, not once per frame. Measured 3.35:1 against its track in light, 6.70:1 in dark.
+ */
+.progressFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--dg-accent-line);
+  transition: inline-size var(--dg-slow) var(--dg-ease);
 }
 
 .srOnly {
@@ -43,7 +140,18 @@
   border: 0;
 }
 
+/*
+ * Deliberately visible, not sr-only: a sighted learner wondering why Next looks dead deserves
+ * the same answer a screen-reader user gets. `.next` takes order:1 so this lands immediately
+ * beside the button it explains without touching the DOM order of button-then-description.
+ * It wraps rather than pushing the row past the zone's 64px.
+ */
 .blockedReason {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-size: var(--dg-label);
+  line-height: 1.25;
+  text-align: end;
+  text-wrap: balance;
+  color: var(--dg-accent-ink);
 }
-
-/* Also available: [data-blocked="true"] on .next while a checkpoint is unanswered. */

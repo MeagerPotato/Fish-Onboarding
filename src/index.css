@@ -127,10 +127,22 @@ ul {
   /* -- type. Floor is 13px; 13px is body text here, not a micro-label. ----- */
   --dg-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
-  --dg-label: 13px;
-  --dg-name: 15px;
-  --dg-lead: 17px;
-  --dg-display: clamp(20px, 5.2vw, 28px);
+  /*
+   * Type is in rem so OS-level text scaling grows the copy. At the default 16px root these
+   * are exactly 13 / 15 / 17px, so nothing shifts visually — but a reader who has raised
+   * their system font size gets larger text instead of being ignored.
+   * Touch targets stay in px: 44px is a physical finger, not a typographic unit.
+   */
+  --dg-label: 0.8125rem; /* 13px */
+  --dg-name: 0.9375rem; /* 15px */
+  --dg-lead: 1.0625rem; /* 17px */
+  /*
+   * Display size. The floor matters more than the ceiling here: at 375px the old 20px floor
+   * put the title only 1.18x above body copy, where the reference site measures 2.2x. The
+   * viewport term is kept gentle because the phone annotation zone is 206px and a headline
+   * that eats it would push the body out of view; desktop has 656px and takes the full size.
+   */
+  --dg-display: clamp(1.375rem, 2.6vw, 2.25rem); /* 22px floor -> 36px cap */
   --dg-track: 0.08em;
   /*
    * The reference site's "mono eyebrow" is not a mono face — it is uppercase plus tracking.
@@ -249,7 +261,34 @@ body {
   color: var(--dg-soft);
 }
 
+/*
+ * Print. The dark palette must not follow the page onto paper — a reader with dark mode on
+ * would otherwise print near-white ink on white. Overriding the TOKENS rather than just
+ * body colour means every component that says `color: var(--dg-ink)` prints black without
+ * needing its own print rule.
+ */
 @media print {
+  :root {
+    --dg-paper: #fff;
+    --dg-paper-2: #fff;
+    --dg-ink: #000;
+    --dg-muted: #333;
+    --dg-soft: #444;
+    --dg-rule: #666;
+    --dg-hair: rgba(0, 0, 0, 0.25);
+    --dg-accent-tint: transparent;
+    --dg-accent-line: #000;
+    --dg-accent-ink: #000;
+    --dg-blue: #000;
+    --dg-red: #000;
+    --dg-suit-spades: #000;
+    --dg-suit-clubs: #000;
+    --dg-suit-diamonds: #000;
+    --dg-suit-hearts: #000;
+    --dg-fast: 0ms;
+    --dg-slow: 0ms;
+  }
+
   body {
     background: #fff;
     color: #000;

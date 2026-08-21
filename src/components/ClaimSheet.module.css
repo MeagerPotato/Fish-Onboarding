@@ -1,69 +1,237 @@
 /*
- * ClaimSheet — styling surface.
+ * ClaimSheet — checkpoints 3 and 4.
  *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * Hooks: [data-placed="true"] on an assigned row, [data-checked="true"] on the chosen seat,
+ * [data-blocked="true"] on the submit button.
  *
- * Styling hooks available on these elements (set by the component, read by you):
- *   [data-placed="true"] on a row once assigned
- *   [data-checked="true"] on the chosen seat
- *   NOTE: all six rows must stay visible together. See the file header.
+ * ALL SIX ROWS STAY VISIBLE TOGETHER. A claim is a simultaneous deduction — "if Kofi has
+ * both jokers, his third card must be the 8 of spades" — so nothing here may clamp, scroll
+ * or paginate `.rows`. No fixed block-size, no overflow, no counters. MOBILE_SPEC §5.2.
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * Row geometry is MOBILE_SPEC §5.4: a 44px card column, an 8px gap, then three equal
+ * segments — 99px each at 375px, 81px at 320px, both clearing the 44px floor on both axes.
+ *
+ * The radios are real and stay real. Never `display: none` them: that drops them out of the
+ * tab order and kills arrow-key navigation inside the group. The native dot is also the
+ * cheapest greyscale-proof "checked" mark there is.
+ *
+ * `claim-submit` carries aria-disabled, never disabled — `.submit:disabled` would match
+ * nothing. The blocked state is [data-blocked="true"]: it looks unavailable, keeps its place
+ * in the tab order, keeps its focus ring, and leaves `.progress` visible beside it, because a
+ * sighted learner wondering why the button looks dead deserves the same answer a screen
+ * reader gets. CODEX_HANDOFF §4.7.
  */
 
+.sheet {
+  display: grid;
+  gap: var(--dg-u3);
+  padding-block: var(--dg-u4);
+  /* One accent, once: the rule that says "this is the part you do". */
+  border-block-start: var(--dg-s-strong) solid var(--dg-accent-line);
+}
+
 .brief {
-}
-
-.deduction {
-}
-
-.deductions {
-}
-
-.error {
-}
-
-.hints {
-}
-
-.hintsSummary {
-}
-
-.progress {
+  font-size: var(--dg-name);
+  line-height: 1.5;
+  color: var(--dg-muted);
 }
 
 .prompt {
-}
-
-.radio {
-}
-
-.reveal {
-}
-
-.revealText {
-}
-
-.row {
+  font-size: var(--dg-lead);
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .rows {
+  display: grid;
+  gap: var(--dg-node-gap);
 }
 
-.seatLabel {
+.row {
+  display: grid;
+  grid-template-columns: minmax(var(--dg-node-min), auto) minmax(0, 1fr);
+  gap: var(--dg-node-gap);
+  align-items: center;
+}
+
+/* A fieldset needs all four of these before it will behave as a grid track. */
+.seats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+  overflow: hidden;
+  background: var(--dg-paper);
+  /* Dashed = this card has nowhere to be yet. State by border style, not by colour. */
+  border: var(--dg-s-line) dashed var(--dg-rule);
+  border-radius: var(--dg-r-md);
+}
+
+.row[data-placed='true'] .seats {
+  border-style: solid;
+  border-color: var(--dg-ink);
 }
 
 .seatOption {
+  display: flex;
+  gap: var(--dg-u1);
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--dg-node-min);
+  padding-inline: var(--dg-u1);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
-.seats {
+.seatOption + .seatOption {
+  border-inline-start: var(--dg-s-hair) solid var(--dg-rule);
 }
 
-.sheet {
+.seatLabel {
+  /* Seat names are capped at 7 characters so they hold at 15px in an 81px segment. §4.8. */
+  font-size: var(--dg-name);
+}
+
+.radio {
+  flex: none;
+  margin: 0;
+  accent-color: var(--dg-accent-line);
+}
+
+/* Four channels on the chosen seat: filled dot, bold name, inset ring, tint. */
+.seatOption[data-checked='true'] {
+  background: var(--dg-accent-tint);
+  box-shadow: inset 0 0 0 var(--dg-s-strong) var(--dg-accent-line);
+}
+
+.seatOption[data-checked='true'] .seatLabel {
+  font-weight: 700;
+}
+
+/* The ring moves to the label so it is visible at segment size; inset, since .seats clips. */
+.seatOption:has(.radio:focus-visible) {
+  outline: var(--dg-s-focus) solid var(--dg-accent-line);
+  outline-offset: calc(-1 * var(--dg-s-focus));
+}
+
+@supports selector(:has(*)) {
+  .radio:focus-visible {
+    outline: none;
+  }
+}
+
+.progress {
+  font-size: var(--dg-label);
+  font-weight: 600;
+  color: var(--dg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* While the button is blocked, the reason is what the eye should land on. */
+.sheet:has([data-blocked]) .progress {
+  color: var(--dg-accent-ink);
+}
+
+.submit {
+  min-block-size: calc(var(--dg-node-min) + var(--dg-u3));
+  inline-size: 100%;
+  padding-inline: var(--dg-u4);
+  font-size: var(--dg-name);
+  font-weight: 700;
+  color: var(--dg-paper);
+  background: var(--dg-ink);
+  border: var(--dg-s-line) solid var(--dg-ink);
+  border-radius: var(--dg-r-md);
+  touch-action: manipulation;
+}
+
+/* Blocked palette converged with StepNav's Next: --dg-soft, one step quieter than --dg-muted.
+   The reason line beside it stays at full strength, so the explanation reads and the control
+   does not. */
+.submit[data-blocked='true'] {
+  color: var(--dg-soft);
+  background: var(--dg-paper-2);
+  border-style: dashed;
+  border-color: var(--dg-rule);
+  cursor: not-allowed;
+}
+
+.error {
+  padding: var(--dg-u2) var(--dg-u3);
+  font-size: var(--dg-name);
+  line-height: 1.45;
+  background: var(--dg-paper-2);
+  border-inline-start: var(--dg-s-strong) solid var(--dg-red);
+  border-radius: 0 var(--dg-r-sm) var(--dg-r-sm) 0;
+}
+
+.error::before {
+  content: '✕ ';
+  font-weight: 700;
+  color: var(--dg-red);
+}
+
+.hints {
+  background: var(--dg-paper-2);
+  border: var(--dg-s-hair) solid var(--dg-rule);
+  border-radius: var(--dg-r-md);
+}
+
+.hintsSummary {
+  padding: var(--dg-u3);
+  font-size: var(--dg-name);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.deductions {
+  display: grid;
+  gap: var(--dg-u2);
+}
+
+.hints .deductions {
+  padding: 0 var(--dg-u3) var(--dg-u3);
+}
+
+.deduction {
+  padding-inline-start: var(--dg-u2);
+  font-size: var(--dg-name);
+  line-height: 1.45;
+  border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
+}
+
+.reveal {
+  justify-self: start;
+  padding-inline: var(--dg-u4);
+  font-size: var(--dg-name);
+  font-weight: 600;
+  background: var(--dg-paper);
+  border: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-pill);
+  touch-action: manipulation;
 }
 
 .solved {
+  display: grid;
+  gap: var(--dg-u2);
+  padding: var(--dg-u3);
+  background: var(--dg-paper);
+  border: var(--dg-s-strong) solid var(--dg-blue);
+  border-radius: var(--dg-r-md);
+}
+
+.revealText {
+  font-size: var(--dg-lead);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.revealText::before {
+  content: '✓ ';
+  color: var(--dg-blue);
 }
 
 .srOnly {
@@ -78,7 +246,13 @@
   border: 0;
 }
 
-.submit {
+/* A press must show within 100ms — MOBILE_SPEC §6.7. Zeroed by --dg-press under reduce. */
+.submit:not([data-blocked]):active,
+.reveal:active,
+.hintsSummary:active {
+  transform: scale(var(--dg-press));
 }
 
-/* Also available: [data-blocked="true"] on .submit until all six cards are placed. */
+.seatOption:active {
+  background: var(--dg-paper-2);
+}

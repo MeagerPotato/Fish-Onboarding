@@ -1,44 +1,144 @@
 /*
- * AskChoice — styling surface.
+ * AskChoice — checkpoints 1 and 2.
  *
- * Every class this component uses is listed below, empty and in alphabetical order.
- * Fill them in; do not rename them, and do not add class names to the .tsx.
+ * Hook: [data-state="idle|wrong|correct"] on each option button.
  *
- * Styling hooks available on these elements (set by the component, read by you):
- *   [data-state="idle|wrong|correct"] on each option button
+ * The wrong state is where the teaching happens, so it is drawn as information, not as a
+ * verdict: the option keeps its paper fill and stays selectable, its border turns DASHED —
+ * this route is closed, the door is not — and the specific reason sits directly beneath it.
  *
- * See CODEX_HANDOFF.md for the full contract.
+ * State is carried by border STYLE plus a glyph, never by colour: idle is a thin solid
+ * hairline, wrong is dashed, correct is a doubled solid edge, and the note below carries
+ * ✕ or ✓. All three survive greyscale. MOBILE_SPEC §7.3.6, DIAGRAM_SYSTEM §3.5.
  */
 
-.brief {
-}
-
 .choice {
+  display: grid;
+  gap: var(--dg-u3);
+  padding-block: var(--dg-u4);
+  /* One accent, once: the rule that says "this is the part you do". */
+  border-block-start: var(--dg-s-strong) solid var(--dg-accent-line);
 }
 
-.hint {
-}
-
-.option {
-}
-
-.optionButton {
-}
-
-.optionText {
-}
-
-.options {
+.brief {
+  font-size: var(--dg-name);
+  line-height: 1.5;
+  color: var(--dg-muted);
 }
 
 .prompt {
+  font-size: var(--dg-lead);
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.reveal {
+.options {
+  display: grid;
+  /* 8px apart — MOBILE_SPEC §6.1 minimum separation between adjacent targets. */
+  gap: var(--dg-node-gap);
 }
 
-.reveal_text {
+.option {
+  display: grid;
+  gap: var(--dg-u1);
+}
+
+.optionButton {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dg-u3);
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--dg-u3);
+  text-align: start;
+  background: var(--dg-paper);
+  border: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-md);
+  touch-action: manipulation;
+}
+
+.optionText {
+  /* Checkpoint option labels are floored at 16px — MOBILE_SPEC §7.1. */
+  font-size: var(--dg-lead);
+  line-height: 1.35;
+}
+
+.optionButton[data-state='wrong'] {
+  border-style: dashed;
+  border-color: var(--dg-red);
+}
+
+/* Border width never changes, so nothing reflows: the second edge is an inset ring. */
+.optionButton[data-state='correct'] {
+  border-color: var(--dg-blue);
+  background: var(--dg-paper-2);
+  box-shadow: inset 0 0 0 var(--dg-s-line) var(--dg-blue);
+}
+
+.optionButton:disabled {
+  cursor: default;
+}
+
+.optionButton:disabled:not([data-state='correct']) {
+  opacity: 0.55;
 }
 
 .why {
+  padding: var(--dg-u2) var(--dg-u3);
+  font-size: var(--dg-lead);
+  line-height: 1.45;
+  background: var(--dg-paper-2);
+  border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
+  border-radius: 0 var(--dg-r-sm) var(--dg-r-sm) 0;
+}
+
+[data-state='wrong'] + .why {
+  border-inline-start-color: var(--dg-red);
+}
+
+[data-state='wrong'] + .why::before {
+  content: '✕ ';
+  font-weight: 700;
+  color: var(--dg-red);
+}
+
+[data-state='correct'] + .why {
+  border-inline-start-color: var(--dg-blue);
+}
+
+[data-state='correct'] + .why::before {
+  content: '✓ ';
+  font-weight: 700;
+  color: var(--dg-blue);
+}
+
+/* Quiet on purpose. The reason under the option is the message; this is only a nudge. */
+.hint {
+  font-size: var(--dg-label);
+  color: var(--dg-muted);
+}
+
+.reveal {
+  justify-self: start;
+  padding-inline: var(--dg-u4);
+  font-size: var(--dg-name);
+  font-weight: 600;
+  background: var(--dg-paper);
+  border: var(--dg-s-line) solid var(--dg-rule);
+  border-radius: var(--dg-r-pill);
+  touch-action: manipulation;
+}
+
+.reveal_text {
+  padding: var(--dg-u3);
+  font-size: var(--dg-lead);
+  line-height: 1.45;
+  background: var(--dg-paper-2);
+  border-radius: var(--dg-r-md);
+}
+
+/* A press must show within 100ms — MOBILE_SPEC §6.7. Zeroed by --dg-press under reduce. */
+.optionButton:active,
+.reveal:active {
+  transform: scale(var(--dg-press));
 }

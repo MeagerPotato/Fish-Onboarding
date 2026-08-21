@@ -64,6 +64,7 @@ export default function App() {
 
   return (
     <AppShell
+      mode={t.checkpoint?.kind === 'claim' ? 'claim' : 'default'}
       header={<ScoreRail score={score} />}
       table={
         <>
