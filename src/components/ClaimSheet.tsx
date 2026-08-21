@@ -86,17 +86,26 @@ export function ClaimSheet({
         ))}
       </ol>
 
-      <p className={s.progress} data-testid="claim-progress" aria-live="polite">
+      <p className={s.progress} id="claim-progress" data-testid="claim-progress" aria-live="polite">
         {placed} of {rows.length} placed
+        {placed < rows.length ? ` — ${rows.length - placed} still to go` : ''}
       </p>
 
+      {/*
+        `aria-disabled` rather than `disabled`. A disabled button leaves the tab order
+        entirely, so a keyboard or screen-reader user meets a dead end with no way to find out
+        what is missing. This stays focusable and points at the visible progress line, which
+        says exactly how many cards are still unplaced. The click is guarded instead.
+      */}
       {!solved ? (
         <button
           type="button"
           className={s.submit}
           data-testid="claim-submit"
-          onClick={onSubmit}
-          disabled={!canSubmit}
+          onClick={canSubmit ? onSubmit : undefined}
+          aria-disabled={!canSubmit}
+          aria-describedby="claim-progress"
+          data-blocked={!canSubmit ? 'true' : undefined}
         >
           Claim {name}
         </button>

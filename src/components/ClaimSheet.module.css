@@ -80,3 +80,5 @@
 
 .submit {
 }
+
+/* Also available: [data-blocked="true"] on .submit until all six cards are placed. */

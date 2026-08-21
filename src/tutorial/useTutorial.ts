@@ -197,7 +197,19 @@ export function useTutorial(startAt = 0): TutorialView {
 
   const next = useCallback(() => move(1), [move])
   const back = useCallback(() => move(-1), [move])
-  const restart = useCallback(() => setStepIndex(0), [])
+  /**
+   * "Start again" is a fresh run, not a rewind: position, solved checkpoints and working
+   * answers all reset together. Moving only the index would replay the whole guide with
+   * every checkpoint already answered and every option disabled — the learner (or the next
+   * person handed the laptop) would never get to think about one again.
+   */
+  const restart = useCallback(() => {
+    const cleared: ReadonlySet<number> = new Set<number>()
+    solvedRef.current = cleared
+    setSolved(cleared)
+    setWorking(workingFor(0, cleared))
+    setStepIndex(0)
+  }, [])
 
   useEffect(() => {
     saveProgress(stepIndex)

@@ -9,7 +9,7 @@
 
 ## 0. The one-paragraph version
 
-A learner scans a printed QR code at a club table and lands directly on step 1 of 26 — no start screen, no interstitial. The app is a fixed five-zone shell sized to `100svh` that never scrolls as a whole: header rail, table, annotation, hand strip, nav bar. Interactive checkpoints open in a bottom sheet at 88svh. There is exactly **one** mobile layout across all phone widths (width changes sizes, never structure) plus exactly **one** fallback mode (`compact scroll`) that handles landscape, tiny screens, and 200% text zoom with the same code. First load is ≤ 98 KB compressed and needs no network afterwards. No service worker. Progress lives in `localStorage` and in the URL.
+A learner scans a printed QR code at a club table and lands directly on step 1 of 19 — no start screen, no interstitial. The app is a fixed five-zone shell sized to `100svh` that never scrolls as a whole: header rail, table, annotation, hand strip, nav bar. Interactive checkpoints open in a bottom sheet at 88svh. There is exactly **one** mobile layout across all phone widths (width changes sizes, never structure) plus exactly **one** fallback mode (`compact scroll`) that handles landscape, tiny screens, and 200% text zoom with the same code. First load is ≤ 98 KB compressed and needs no network afterwards. No service worker. Progress lives in `localStorage` and in the URL.
 
 ### 0.1 Terminology rule (binding on all UI copy)
 
@@ -101,7 +101,7 @@ Compressed transfer size (Brotli, falling back to gzip). These are **ceilings, n
 |---|---|
 | `index.html` incl. inline critical CSS + shell markup | 6 KB |
 | JS — React 19 + ReactDOM | 45 KB |
-| JS — application (26 steps of content, game logic, components) | 35 KB |
+| JS — application (19 steps of content, game logic, components) | 35 KB |
 | CSS — non-critical, async | 12 KB |
 | Web fonts | **0 KB** (mandatory) |
 | Raster images | **0 KB** (mandatory — see §7.4) |
@@ -347,7 +347,7 @@ Five persistent panels do not fit in 650px. Two are demoted to a summary-plus-sh
 
 ### 4.8 Content constraints derived from this layout
 
-These are binding on whoever writes the 26 steps of copy. They are consequences of the zone heights, not style preferences.
+These are binding on whoever writes the 19 steps of copy. They are consequences of the zone heights, not style preferences.
 
 | Content | Limit | Derivation |
 |---|---|---|
@@ -627,7 +627,7 @@ Reasoning:
 
 ### 9.2 No network after first load
 
-**Zero network requests after the app has loaded.** Every one of the 26 steps, all scripted game state, all card data, and the cheat sheet ship in the initial bundle.
+**Zero network requests after the app has loaded.** Every one of the 19 steps, all scripted game state, all card data, and the cheat sheet ship in the initial bundle.
 
 Consequences that are requirements:
 
@@ -714,7 +714,7 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 4. Total compressed transfer for a cold first load is **≤ 120 KB** (target ≤ 98 KB), measured in DevTools with cache disabled.
 5. Uncompressed JS is **≤ 350 KB**.
 6. Zero font files and zero raster images appear in the network waterfall.
-7. With the network blocked after load, all 26 steps, all 4 checkpoints, and the cheat sheet are completable with **zero** network requests recorded.
+7. With the network blocked after load, all 19 steps, all 4 checkpoints, and the cheat sheet are completable with **zero** network requests recorded.
 8. With JS blocked entirely, `index.html` still paints a heading and a sentence (not a blank page and not a bare spinner).
 9. With the JS entry delayed past **8 s**, the "Still loading" message and a working Retry button appear.
 
@@ -729,13 +729,13 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 
 **Layout**
 
-16. At 320px width, no horizontal page scrollbar exists and no content is clipped, on every one of the 26 steps.
+16. At 320px width, no horizontal page scrollbar exists and no content is clipped, on every one of the 19 steps.
 17. At 375 × 650, the shell does not scroll as a whole; only the annotation zone and sheets scroll.
 18. All 9 hand cards are visible simultaneously without scrolling, at 320px, including a hand holding one card in each of nine different half-suits.
 19. Card ranks in the hand strip render at **≥ 16px**; suit glyphs at **≥ 14px** (≥ 12px at 320px).
 20. All 6 seats, all 6 card counts, and the active-seat marker are visible and legible at 320px without scrolling.
-21. Cumulative Layout Shift across a full 26-step run is **≤ 0.05**.
-22. Advancing 26 steps and returning produces no zone-height change other than the annotation zone.
+21. Cumulative Layout Shift across a full 19-step run is **≤ 0.05**.
+22. Advancing 19 steps and returning produces no zone-height change other than the annotation zone.
 
 **Claim checkpoint**
 
@@ -768,7 +768,7 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 **Motion**
 
 42. With Reduce Motion enabled at the OS level, no element animates: sheets appear instantly, no pulse on the active seat, no card-deal animation.
-43. With Reduce Motion enabled, all 26 steps and all 4 checkpoints are still completable, and every state change is still perceivable.
+43. With Reduce Motion enabled, all 19 steps and all 4 checkpoints are still completable, and every state change is still perceivable.
 44. No animation runs while the app is idle (verified in a performance trace: zero scripted animation frames after 3 s of no interaction).
 45. Sheet open/close holds ≥ 55fps on a mid-tier Android device.
 
@@ -776,7 +776,7 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 
 46. Advancing to step 12, closing the tab, and reopening the URL within 2 hours restores step 12 with a dismissible bar.
 47. The same sequence after 2 hours opens step 1.
-48. With `localStorage` disabled or throwing, the app runs normally through all 26 steps and shows no error.
+48. With `localStorage` disabled or throwing, the app runs normally through all 19 steps and shows no error.
 49. Locking the phone at step 12 and returning after 5 minutes restores the same step with live state and no reload (bfcache verified in DevTools).
 50. `/step/17` entered directly renders step 17 correctly.
 
@@ -808,6 +808,6 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 1. **Drop `react-router-dom`?** It costs ~20 KB compressed — the entire margin between the 98 KB target and the 120 KB ceiling — for two routes in a linear stepper. Recommend removing it; needs your call before the component author starts. (§1.6)
 2. **Domain length.** The QR budget assumes a target URL ≤ 25 characters at the apex. If the app will live at a long path on an existing domain, the QR gets denser and scan latency rises on older cameras. Worth buying a short domain. (§1.1)
 3. **Four-colour deck.** §7.3.2 recommends spades/hearts/diamonds/clubs in four distinct colours rather than the traditional red/black. It is unambiguously better for colourblind readers and at arm's length, but it is unfamiliar and it is a visual-identity decision that belongs to you and Codex, not to this spec. Shape-primary is required either way; the four-colour scheme is the recommendation on top.
-4. **Seat names ≤ 7 characters.** Derived from the claim sheet at 320px (§5.4). This constrains the scripted game's cast. Confirm before the 26 steps are written, since renaming later ripples through every step's copy.
+4. **Seat names ≤ 7 characters.** Derived from the claim sheet at 320px (§5.4). This constrains the scripted game's cast. Satisfied: the cast is You, Ravi, Mia, Dana, Kofi, Sam — all ≤ 4 characters, with distinct initials, and a test in tests/tutorial/script.test.ts enforces it.
 5. **Cheat sheet: one panel or two?** §10.1 permits two. One is better for sharing; two allows a fuller half-suit reference. This is a content-scope decision that determines whether the 9 half-suits get a full table or a compressed line.
 6. **Analytics.** This spec assumes none. If any is wanted, it must be fire-and-forget and off the critical path (§9.2) — and note that §9.1's "revisit the service worker at 15% repeat visits" trigger is unmeasurable without it.

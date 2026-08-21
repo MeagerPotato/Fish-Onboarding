@@ -22,7 +22,15 @@ export function HandFan({ groups, highlight = [], highlightHalfSuit }: HandFanPr
   const total = groups.reduce((n, g) => n + g.cards.length, 0)
 
   return (
-    <section className={s.hand} data-testid="hand" aria-label={`Your hand, ${total} cards`}>
+    <section className={s.hand} data-testid="hand" aria-labelledby="hand-heading">
+      {/*
+        The step title is the page's h1 and the half-suit names below are h3, so this h2 is
+        what stops the heading outline skipping a level. It is visually hidden rather than
+        absent because the level has to exist for anyone navigating by headings.
+      */}
+      <h2 className={s.srOnly} id="hand-heading">
+        Your hand, {total} {total === 1 ? 'card' : 'cards'}
+      </h2>
       {total === 0 ? (
         <p className={s.empty} data-testid="hand-empty">
           You are out of cards.

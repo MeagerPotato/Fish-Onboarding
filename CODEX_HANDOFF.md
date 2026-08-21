@@ -155,6 +155,20 @@ hooks. None of them has an opinion about how it looks.
 - **The cheat sheet must print.** It is the artefact people screenshot and leave next to the
   deck.
 
+### One thing you must build: the log needs a scroll clamp
+
+`LogPanel` renders the **entire** history — 16 entries by checkpoint 3, 35 by checkpoint 4.
+It used to be truncated to the last four in JS, and desktop QA caught what that cost: the
+evidence checkpoint 4 turns on is two joker asks that happen many steps earlier, so truncating
+made the checkpoint unsolvable and the guide's central promise false.
+
+So the JS no longer truncates, and **the log zone must be height-clamped and scrollable in
+CSS** — `overflow-y: auto` inside its zone, with the newest entry visible without scrolling.
+Every earlier entry must stay reachable by scrolling. Do not reintroduce a cap in the markup.
+
+On a phone this is the summary-chip-plus-sheet pattern from `docs/MOBILE_SPEC.md` §4; the
+sheet must show the whole history, not a window onto it.
+
 ---
 
 ## 7. Definition of done

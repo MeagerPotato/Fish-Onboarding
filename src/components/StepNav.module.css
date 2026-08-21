@@ -42,3 +42,8 @@
   white-space: nowrap;
   border: 0;
 }
+
+.blockedReason {
+}
+
+/* Also available: [data-blocked="true"] on .next while a checkpoint is unanswered. */

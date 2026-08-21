@@ -60,20 +60,28 @@ export function StepNav({
         </button>
       ) : (
         <>
+          {/*
+            `aria-disabled`, not `disabled`. A disabled Next drops out of the tab order, so a
+            keyboard user tabbing forward simply finds nothing and is given no reason why.
+            This stays focusable and is described by a reason that is VISIBLE, not sr-only —
+            a sighted learner wondering why Next looks dead deserves the same answer.
+            `onNext` is separately guarded in the hook, so a stray click is inert.
+          */}
           <button
             type="button"
             className={s.next}
             data-testid="nav-next"
             onClick={onNext}
-            disabled={blocked}
+            aria-disabled={blocked}
             aria-describedby={blocked ? 'nav-blocked' : undefined}
+            data-blocked={blocked ? 'true' : undefined}
           >
             Next
           </button>
           {blocked ? (
-            <span id="nav-blocked" className={s.srOnly}>
-              Answer the question above to continue.
-            </span>
+            <p id="nav-blocked" className={s.blockedReason} data-testid="nav-blocked">
+              Answer above to continue
+            </p>
           ) : null}
         </>
       )}
