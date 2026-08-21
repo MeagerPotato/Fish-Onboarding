@@ -127,7 +127,7 @@ describe('dealing', () => {
 })
 
 describe('validateDeal', () => {
-  const good = () => dealHands('valid').map((h) => [...h])
+  const good = (): string[][] => dealHands('valid').map((h) => [...h] as string[])
 
   it('accepts a well-formed deal', () => {
     const r = validateDeal(good())

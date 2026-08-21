@@ -1,7 +1,7 @@
 /**
  * Card and half-suit constants plus pure helpers. RULES.md rows 1-3 and §2.
  */
-import type { Card, Half, HalfSuitId, Joker, Rank, Seat, Suit, Team } from './types.ts'
+import type { Card, HalfSuitId, Joker, Rank, Seat, Suit, Team } from './types.ts'
 
 export const SUITS: readonly Suit[] = ['C', 'D', 'H', 'S']
 export const LOW_RANKS: readonly Rank[] = ['2', '3', '4', '5', '6', '7']

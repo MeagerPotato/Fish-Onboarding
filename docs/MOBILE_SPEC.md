@@ -317,6 +317,11 @@ The worst case is a hand holding one card in each of nine different half-suits �
 
 **Chip contents:** rank glyph ≥ 16px above suit glyph (≥ 14px at `sm`/`md`, ≥ 12px at `xs`). Chips are rendered as live text, never images (§7.4).
 
+**Two chip contents need explicit handling:**
+
+- **"10"** (engine rank `T`) is two glyphs and sets the width floor. At `xs` the chip is 28px wide; "10" at 16px in a condensed or tabular face must fit inside it with ≥ 2px side bearing. The designer must verify "10" specifically — not "8" — when choosing the rank face. Do **not** solve this by rendering `T`; learners read "10".
+- **The two jokers** have no rank and no suit glyph. They need their own chip treatment carrying a joker mark plus a text distinction (§7.3.7). They must remain distinguishable from each other at 28px.
+
 **Why display-only:** at 28–36px wide, a chip cannot be an independent tap target without violating the 44px minimum, and faking it with overlapping invisible hit areas creates mis-taps. So chips are not independent targets at all. Per-card selection happens exclusively inside sheets, where there is room for real 44px targets (§5). The strip as a whole is one full-width target ≥ 44px tall that opens the hand sheet, where ranks render at ≥ 20px.
 
 **Teaching highlight:** the cards belonging to the half-suit currently under discussion must be visually distinguished in the strip by a non-colour-only treatment (outline plus elevation change), and their accessible names must carry the distinction too.
@@ -418,18 +423,32 @@ Every segment clears 44px width and 44px height at every supported size. This is
 1. The compact table strip stays pinned at the top of the sheet — checkpoints 1 and 2 require reading the table and log while answering, and the claim requires knowing who sits where.
 2. Live assignment counter, "N of 6 assigned", in a polite live region.
 3. **Submit is disabled until all 6 are assigned**, and the disabled state must state why in visible text ("Assign all 6 cards to continue") — never a bare greyed button. The button must remain focusable while disabled so assistive tech can reach the explanation (`aria-disabled`, not the `disabled` attribute).
-4. On submit, feedback is **per row**: each row shows correct/incorrect with a glyph and text, not colour alone.
-5. **A wrong claim is never a dead end.** The learner may revise and resubmit without limit. On the second incorrect attempt, reveal a hint naming one card's holder. There is no scoring here; the objective is comprehension.
-6. Options are the **three seats on the learner's own team, including the learner**. Label the learner's own option "You". Opponent seats must not appear as options — offering an illegal choice teaches the wrong rule.
-7. Each row's radio group is named by the card ("Queen of Spades"), each option by the seat name. Do not rely on visual row adjacency to convey the pairing.
+4. **On submit, the true holder of all six cards is revealed** (the engine returns `actualHolders` and `RULES.md` makes the reveal unconditional). Each row shows the learner's assignment against the truth, marked with a glyph and text, never colour alone. The reveal is the teaching payload of the whole checkpoint — it must be the most prominent thing on screen after submit, not a footnote under the button.
+5. **Three outcomes must be distinguishable, not two.** `RULES.md` rows 13–15 give: *your team scores*; *the opposing team scores* because an opponent held at least one of the six; *void* — your team held all six but a location was wrong, so nobody scores. A binary right/wrong treatment is a spec violation. Each outcome gets its own heading, its own glyph, and one sentence naming the rule that produced it. The void case in particular is counter-intuitive and is the reason this checkpoint exists.
+6. **A wrong claim is never a dead end.** The learner may revise and resubmit without limit. On the second incorrect attempt, reveal a hint naming one card's holder. There is no scoring here; the objective is comprehension.
+7. Options are the **three seats on the learner's own team, including the learner**. Label the learner's own option "You". Opponent seats must not appear as options — offering an illegal choice teaches the wrong rule, and the engine rejects it as `ASSIGN_OPPONENT`.
+8. **The six cards are the half-suit's six cards, not the learner's hand.** A learner may claim a half-suit while holding none of it (`RULES.md` row 16). Rows are generated from the half-suit definition. Cards the learner happens to hold may be marked as such, but holding a card must never be a precondition for it appearing as a row.
+9. Each row's radio group is named by the card ("Queen of Spades", "Red joker"), each option by the seat name. Do not rely on visual row adjacency to convey the pairing.
+10. After any claim the claimant's turn continues (`RULES.md` row 17). The UI must not imply the turn passed.
 
 ### 5.6 The other three checkpoints
 
 All four checkpoints use **the same bottom sheet mechanism** at 88svh, opened by the "Answer this" button in the nav bar. One mechanism, one set of behaviours, one thing to learn.
 
-- **"Which of these asks is legal?"** — single-select list, one row per candidate ask, each row ≥ 44px, full-width. On an incorrect pick, the feedback must name the specific rule broken: already holds the card / holds no card of that half-suit / asked a teammate.
-- **Reasoning question** — same list pattern. Feedback explains the inference from public information, referencing specific log entries.
-- **Endgame / scoring decision** — same list pattern.
+- **"Which of these asks is legal?"** — single-select list, one row per candidate ask, each row ≥ 44px, full-width. On an incorrect pick, the feedback must name the **specific** rule broken, mapped to the engine's own error codes so copy and engine cannot drift: asked a teammate (`TARGET_TEAMMATE`), holds no card of that half-suit (`NO_CARD_OF_HALF_SUIT`), already holds the card (`ASKING_OWN_CARD`), target has no cards (`TARGET_OUT`). These are four of `RULES.md` §3's "four gates a beginner must internalise" — the candidate asks should cover them rather than repeating one.
+- **Reasoning question** — same list pattern. Feedback explains the inference from public information, referencing specific log entries by their position in the log so the learner can open the log sheet and re-read them.
+- **Endgame / scoring decision** — same list pattern. Note this checkpoint sits on `RULES.md` rows 21–23, where one team is out of cards and the other must claim every remaining half-suit.
+
+**Seat-picker interactions (`pass` and `designate`).** Two distinct choices that look alike and must not be conflated in copy or in code:
+
+| Action | Trigger | Legal targets |
+|---|---|---|
+| `pass{to}` | The learner's own claim used up their last cards (`RULES.md` row 20, phase `awaitPass`) | A **teammate** who still has cards |
+| `designate{to}` | The learner's whole team is out while opponents still hold cards (`RULES.md` §5, phase `awaitDesignate`) | An **opponent** who still has cards |
+
+Both use a **list of seat rows, not the table diagram** — the same full-width ≥ 44px row pattern as the other checkpoints. Do not make the learner tap a 56px seat token on the ellipse: the targets are small, clustered, and the choice set is at most two.
+
+Seats with no cards are **excluded from the list entirely** rather than shown disabled, since they are not legal choices (`PASS_TARGET_OUT`, `DESIGNATE_TARGET_INVALID`). Each list must state in one line *why* the learner is choosing — "You're out of cards. Who on your team plays on?" versus "Your team is out. Who claims the rest?" — because the two screens are visually identical and mean opposite things.
 
 Shared checkpoint behaviour: inline non-blocking feedback, unlimited retries, no timers, no score, results announced in a polite live region, and the sheet never traps the learner (Close is always available and always ≥ 44×44px).
 
@@ -543,7 +562,11 @@ These apply in **both** light and dark schemes — `index.html` declares `color-
 4. **Active seat** — ring + caret + accessible-name suffix (§4.4).
 5. **Score board cell state** — label text plus shape, not fill colour alone (§4.7).
 6. **Checkpoint correct/incorrect** — glyph plus text, not colour alone (§5.5.4).
-7. **Jokers and 8s** (the ninth half-suit) need a distinct treatment that does not depend on colour; jokers in particular have no suit glyph to lean on and need their own mark.
+7. **Jokers and 8s** (the ninth half-suit) need a distinct treatment that does not depend on colour.
+
+   **The jokers are the sharpest colour-independence problem in this product and need a specific ruling.** `RULES.md` §2 names them "the red joker" and "the black joker" — they are two distinct, individually askable cards whose *only* canonical distinguishing feature is a colour word. For a colourblind learner, a red-vs-black distinction carried by fill colour is precisely the failure mode §7.3 exists to prevent, and here it is not cosmetic: asking for the wrong joker is an illegal or wasted ask.
+
+   Required: each joker carries a **distinct non-colour mark** (two different joker glyphs, or a mark plus a differing outline treatment) **and** its full text label — "Red joker" / "Black joker" — wherever it appears at full size, with the words in the accessible name at every size including the 28px hand chip. The colour words stay, because they are the table's shared vocabulary and the learner must be able to say them out loud; but they must never be the *only* channel on screen.
 
 ### 7.4 No text in images
 
@@ -764,6 +787,19 @@ Run on a **real phone**, not a simulator, at 320px and at 375px, in both light a
 53. Printing while the device is in dark mode still produces a light-background page.
 54. All cheat sheet text is selectable and copyable.
 55. Every instance of the word "book" in the built output is confined to the single permitted glossary line — verified by a case-insensitive search over the built bundle and the rendered DOM.
+
+**Variant conformance (`RULES.md`)**
+
+56. The rank `T` renders as "10" everywhere in the UI; a search of the rendered DOM for a standalone "T" as a card rank returns zero matches.
+57. "10" fits inside a hand chip at 320px with ≥ 2px side bearing and is not clipped or ellipsised.
+58. The red joker and the black joker are distinguishable from each other **in greyscale**, at hand-chip size (28px) and at full size, and both carry their full text label in their accessible name.
+59. A seat at 0 cards shows the word "out", carries " — out" in its accessible name, and remains at its original ring position; no seat reflows when a player goes out.
+60. All three claim outcomes are reachable in the guide and each renders a distinct heading, glyph, and rule sentence: your team scores, opposing team scores, void.
+61. After submitting a claim, the true holder of all six cards is displayed.
+62. The claim sheet renders all six rows for a half-suit of which the learner holds zero cards.
+63. Where a pass or designate choice is offered, it is a list of ≥ 44px seat rows; `pass` lists only teammates with cards and `designate` lists only opponents with cards, and each screen states why the learner is choosing.
+64. The final result screen renders a tie correctly (reachable when a void produces 4–4), not only a win or a loss.
+65. Each incorrect answer on the legality checkpoint names the specific broken rule, and the four candidate asks across the checkpoint cover four distinct engine error codes.
 
 ---
 
