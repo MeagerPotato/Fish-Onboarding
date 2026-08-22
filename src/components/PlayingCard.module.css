@@ -18,8 +18,33 @@
  * property (`--dg-card-sm|md|lg`) instead of restating six declarations.
  * Aspect is 1 : 1.4, the real ratio of a poker card.
  *
- * Suit is carried by the GLYPH. `--suit` only tints it, and every value below
- * clears 4.5:1 on the card face in both schemes (docs/DIAGRAM_SYSTEM.md §3.3).
+ * WHAT A CARD IS, ON NEAR-BLACK. Decided once, here, because nine of these sit in
+ * the hand at all times and six more in every claim.
+ *
+ * A card is an OPAQUE OBJECT WITH A RULED EDGE, not a lifted panel and not a bare
+ * outline on the page.
+ *
+ *   - The edge does all of the separating work: 1.5px of `--dg-rule`, 3.43:1
+ *     against the page and 3.32:1 against the card's own fill. Card boundaries are
+ *     load-bearing — two adjacent cards 2px apart have to read as two objects — so
+ *     the edge gets the compliant rule, never a hairline.
+ *   - The fill is `--dg-paper-2`, one step off the page and measuring 1.03:1
+ *     against it. That is deliberately far subtler than a normal dark UI: it is
+ *     what the reference's dark branch does with its own surface tier, and it is
+ *     why the face reads as printed stock rather than as a glowing panel. It is
+ *     doing no separating; it exists so the card is OPAQUE, and therefore reads as
+ *     the same object whether it sits on the page, in a sunk panel or on a chip.
+ *     A transparent card would change identity with its container.
+ *   - No shadow. There was never one, and on near-black there is nothing a shadow
+ *     could do that the edge is not already doing.
+ *
+ * Suit is carried by the GLYPH, and only by the glyph. `--suit` tints the SYMBOL
+ * and nothing else — the rank stays at full `--dg-ink` (16.17:1) at every size,
+ * because the rank is the thing read at arm's length and a clubs card must not be
+ * dimmer than a spades card. On the dark ground the four suit tokens measure
+ * 8.75 (clubs) / 9.14 (diamonds) / 10.45 (hearts) / 16.17 (spades) against the
+ * card face, so every one of them clears 4.5:1 with room to spare; their apparent
+ * weights still differ a lot, which is exactly why they may not carry the meaning.
  */
 
 .card {
@@ -34,8 +59,8 @@
   padding: calc(var(--cw) * 0.03);
   border: var(--dg-s-line) solid var(--dg-rule);
   border-radius: var(--dg-r-sm);
-  background: var(--dg-paper);
-  color: var(--suit, var(--dg-ink));
+  background: var(--dg-paper-2);
+  color: var(--dg-ink);
   line-height: 1;
   text-align: center;
   /*
@@ -47,7 +72,8 @@
   touch-action: manipulation;
   transition:
     border-color var(--dg-fast) var(--dg-ease),
-    background-color var(--dg-fast) var(--dg-ease);
+    background-color var(--dg-fast) var(--dg-ease),
+    color var(--dg-fast) var(--dg-ease);
 }
 
 /* sm 32×45 (chips, log, claim rows) · md 36×50 (the hand) · lg 54×76 (sheets). */
@@ -85,6 +111,11 @@
  * 16px is the hand-strip rank floor (docs/MOBILE_SPEC.md §7.1) and "10" is the
  * widest glyph pair, so the floor is expressed as a token length rather than a
  * ratio that could fall under it at the smallest card.
+ *
+ * Measured, because "10" is the one that can clip: at the narrowest card in the
+ * app (27px, the hand below 360px) the rank renders at 16px and "10" occupies
+ * 17.1px inside 22.4px of content box. At sm/32px it is 19.2 inside 27.1, and at
+ * lg/54px 32.3 inside 47.8. Widest case has 5.3px of slack.
  */
 .rank {
   font-size: max(var(--dg-u4), calc(var(--cw) * 0.56));
@@ -98,8 +129,11 @@
  * 13.2px — 0.8px under the floor at a width the relaxation does not cover. 0.47 lands it at
  * 14.1px there, keeps 320px at 12.7px (still over its own floor), and stays well inside the
  * card: rank + gap + suit is 34px of a 42px face.
+ *
+ * This element, and only this element, carries the suit hue.
  */
 .suit {
+  color: var(--suit, var(--dg-ink));
   font-size: max(var(--dg-u3), calc(var(--cw) * 0.47));
 }
 
@@ -107,15 +141,22 @@
  * The two jokers. ★ vs ☾, RED vs BLK, and — the third channel — a filled plaque
  * for black against an outlined one for red. All three survive greyscale, which
  * they must: asking for the wrong joker wastes a turn (DESIGN_BRIEF.md §4.2).
+ * Filled-vs-outlined is a pure luma difference, so it is the channel that carries
+ * the pair once the colour is gone: the black plaque's ground measures 238 luma,
+ * the red plaque's 22.
+ *
+ * The mark keeps its hue here — unlike a rank, ★ and ☾ are the suit, so tinting
+ * them is reinforcement rather than decoration.
  */
 .card[data-joker='true'] .rank {
+  color: var(--suit, var(--dg-ink));
   font-size: max(var(--dg-u5), calc(var(--cw) * 0.6));
   font-weight: 400;
 }
 
 .card[data-joker='true'] .suit {
   align-self: stretch;
-  border-radius: calc(var(--dg-u1) / 2);
+  border-radius: var(--dg-r-sm);
   font-size: max(var(--dg-label), calc(var(--cw) * 0.3));
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -126,31 +167,86 @@
   color: var(--dg-paper);
 }
 
+/*
+ * An inset ring, not a border, so the plaque cannot change size between the two
+ * jokers — the reference draws every state edge this way for the same reason.
+ * The ring names its token outright rather than riding `currentcolor`, so that a
+ * reader can see it is `--dg-suit-hearts`: 10.11:1 on the face, well past the 3:1
+ * a meaningful edge owes.
+ */
 .card[data-suit='joker-red'] .suit {
-  box-shadow: inset 0 0 0 var(--dg-s-hair) currentcolor;
+  box-shadow: inset 0 0 0 var(--dg-s-hair) var(--suit, var(--dg-ink));
 }
 
-/* Not the subject right now. Recede by ink and ground, never by opacity: a
-   translucent rank is an unreadable rank at arm's length. */
+/*
+ * Not the subject right now. Recede by ink and ground, never by opacity — and on
+ * a near-black page that matters twice over: opacity now dims TOWARDS the ground,
+ * so a translucent card does not merely go quiet, it disappears.
+ *
+ * Two channels, both of them surviving greyscale:
+ *   1. every glyph goes `--dg-ink` → `--dg-muted`, 238 → 160 Rec.709 luma and
+ *      still 7.19:1 on the face. This is the load-bearing one — LogPanel passes
+ *      `muted` to mean a MISS, so it has to read with the colour gone.
+ *   2. the fill drops from the object tier back to page level, so the face stops
+ *      being an object and becomes a hole with a ruled edge.
+ * The edge itself does not move. It keeps `--dg-rule` at 3.43:1, because the
+ * boundary is still load-bearing — a missed card in the log is still a card you
+ * have to count — and a weight step would be a lie: 1.5px and 1px both snap to
+ * one device pixel at DPR 1, so it would buy nothing on the desktop it looks
+ * best on.
+ */
 .card[data-muted='true'] {
   --suit: var(--dg-muted);
 
-  border-color: var(--dg-hair);
-  background: var(--dg-paper-2);
+  background: var(--dg-paper);
+  color: var(--dg-muted);
 }
 
-/* The card the step is talking about: weight step + tint + halo, so it reads as
-   lifted without a shadow and without relying on the accent hue alone. */
+/*
+ * The black joker's plaque is the one thing on a card face that is a FILL rather
+ * than ink, so `--suit` does not reach it and a muted black joker would otherwise
+ * keep a 238-luma plaque while everything around it dropped to 160. It appears
+ * muted for real — the log mutes every card of a missed ask, jokers included.
+ * `--dg-muted` behind `--dg-paper` is 7.19:1, and the plaque stays filled, which
+ * is the channel that tells it from the red joker's outlined one.
+ */
+.card[data-muted='true'][data-suit='joker-black'] .suit {
+  background: var(--dg-muted);
+}
+
+/*
+ * The card the step is talking about. One amber mark, not three: a 2px
+ * `--dg-accent-line` edge over an `--dg-accent-tint` ground.
+ *
+ * The halo that used to sit outside this went with the light palette. On cream a
+ * second concentric ring read as lift; on near-black it reads as glow, and amber
+ * is far louder here than it was on paper — a whole half-suit can be highlighted
+ * at once, so the mark has to stay small enough to survive being repeated.
+ *
+ * Greyscale: the tint resolves to 44.8 luma over the page against the face's 21.6,
+ * so the ground more than doubles, and the edge thickens. Neither is the hue.
+ */
 .card[data-highlighted='true'] {
   border-width: var(--dg-s-strong);
   border-color: var(--dg-accent-line);
   background: var(--dg-accent-tint);
-  outline: var(--dg-s-hair) solid var(--dg-accent-line);
-  outline-offset: var(--dg-s-hair);
 }
 
-/* Interactive faces. Every size is already ≥ 44px tall, so the touch floor is met
-   by the card itself and needs no invisible hit area. */
+/*
+ * Interactive faces. Nothing in the shipped guide passes `onClick`, so these are
+ * the component's contract rather than live styling. Note for whoever wires one
+ * up: every size clears 44px in BLOCK size, but `sm` is 32px wide and `md` 36–40,
+ * so a clickable card needs horizontal padding from its container to reach a
+ * 44×44 target. That is a container decision and cannot be made here without
+ * changing the card's printed proportions.
+ */
+@media (hover: hover) {
+  button.card:hover:not(:disabled) {
+    border-color: var(--dg-muted);
+    background: var(--dg-tile);
+  }
+}
+
 button.card:active {
   transform: scale(var(--dg-press));
 }
@@ -161,10 +257,13 @@ button.card[aria-pressed='true'] {
   background: var(--dg-accent-tint);
 }
 
+/* Dashed means "provisional / not available" throughout this system. */
 button.card:disabled {
   --suit: var(--dg-muted);
 
   border-style: dashed;
+  color: var(--dg-muted);
+  cursor: default;
 }
 
 .srOnly {

@@ -8,11 +8,26 @@
  * scroll away. Nothing is ever hidden.
  *
  * Channels (§3.5.3 — colour never informs alone):
- *   hit / miss      → glyph, border style (solid vs dashed), text weight and ink
- *   who acted       → the bar hue plus the trailing corner radius; the sentence names them
- *   awarded to      → claims take the winning team's bar and corners, not the claimer's
+ *   hit / miss      → glyph, border style, border weight, text weight, text luminance
+ *   who acted       → one rule for Blue, a doubled rule for Red; the sentence names them
+ *   awarded to      → claims take the winning team's rule, not the claimer's
  * The glyphs are generated content, so they are decorative only — every entry says
  * "hands it over" / "no. The turn passes to…" / "the other team is awarded it" in words.
+ *
+ * WHAT THE DARK LAYER BROKE HERE, because it is the whole reason this file changed:
+ *
+ *   1. Hit was drawn on --dg-paper and everything else on --dg-paper-2, which on cream meant
+ *      "the important row is the raised one". Those two now sit 1.03:1 apart and --dg-paper
+ *      *is* the page, so the important row was the one with no fill at all — the emphasis
+ *      ran backwards and was invisible in both directions. Fills no longer separate anything
+ *      here; the rule down the leading edge does, and the faint --dg-tile that survives is a
+ *      whisper on the rows that already shout, never the carrier.
+ *
+ *   2. Team rode on `border-start-end-radius`. Every radius token is 0 now, so that channel
+ *      silently evaporated and left hue alone — and --dg-blue against --dg-red is 1.13:1
+ *      once desaturated, which is no channel at all. Red is drawn as a doubled rule instead:
+ *      the bar, a gap, then a hairline. One line versus two survives greyscale, survives the
+ *      2px hit bar, and keeps every sentence starting on the same column.
  */
 
 /* The zone around this already owns the page padding. */
@@ -56,6 +71,12 @@
   scrollbar-width: thin;
 }
 
+/*
+ * No fill. The entry sits on the page and is marked by the rule down its leading edge, which
+ * is the only separator on this ground that is actually visible. --dg-rule is the fallback
+ * for the handful of entries with no actor; every other entry overrides it with a team hue,
+ * all of which clear the 3:1 a border owes by a wide margin.
+ */
 .entry {
   display: flex;
   flex-wrap: wrap;
@@ -63,12 +84,21 @@
   gap: var(--dg-u1) var(--dg-u2);
   padding: var(--dg-u1) var(--dg-u2);
   border-inline-start: var(--dg-s-line) solid var(--dg-rule);
-  border-radius: var(--dg-r-sm);
-  background: var(--dg-paper-2);
   color: var(--dg-muted);
   font-size: var(--dg-label);
   line-height: 1.35;
   animation: entry var(--dg-fast) var(--dg-ease-out);
+}
+
+/*
+ * Row separation used to come free with the fill. It cannot now — 1.03:1 delimits nothing —
+ * so it becomes what the reference itself uses for the job: a hairline between list rows.
+ * --dg-hair-faint is decoration by definition (1.34:1) and decoration is all this is; the
+ * leading rule and the gutter glyph are what actually tell you where an entry begins, which
+ * matters because entries wrap to two and three lines here.
+ */
+.entry + .entry {
+  border-block-start: var(--dg-s-hair) solid var(--dg-hair-faint);
 }
 
 @keyframes entry {
@@ -103,20 +133,35 @@
 
 .entry[data-team='0'] {
   border-inline-start-color: var(--dg-blue);
-  border-start-end-radius: var(--dg-r-lg);
-  border-end-end-radius: var(--dg-r-lg);
 }
 
+/*
+ * Red is the doubled rule. The inset lines are geometry, not depth: zero blur, zero offset,
+ * a solid line inside the padding box exactly where a second rule would be printed. The
+ * --dg-paper line is painted over the --dg-red one and leaves the outer 2px as the gap, so
+ * what lands is bar / gap / hairline. It reads at any border weight the hit and claim rules
+ * ask for, and it is the same mark whether the row has a --dg-tile fill or none — those two
+ * are 1.14:1 apart, so the gap never shows a seam.
+ */
 .entry[data-team='1'] {
   border-inline-start-color: var(--dg-red);
+  box-shadow:
+    inset var(--dg-s-strong) 0 0 0 var(--dg-paper),
+    inset calc(var(--dg-s-strong) + var(--dg-s-hair)) 0 0 0 var(--dg-red);
 }
 
 /* ----------------------------------------------------- hit and miss ----- */
 
-/* Hit: the loop glyph, a solid 2px bar, full ink. You go again. */
+/*
+ * Hit: the loop glyph, a solid 2px bar, full ink, and the only fill in the file. You go
+ * again. Five channels separate this from a miss and four of them are colourless: the glyph,
+ * the border style, the border weight, the text weight, and the 16.17:1-versus-6.96:1 step
+ * in text luminance, which is a lightness difference rather than a hue one and so survives
+ * desaturation intact.
+ */
 .entry[data-hit='true'] {
   border-inline-start-width: var(--dg-s-strong);
-  background: var(--dg-paper);
+  background: var(--dg-tile);
   color: var(--dg-ink);
   font-weight: 600;
 }
@@ -144,7 +189,7 @@
  */
 .entry[data-kind='claim'] {
   border-inline-start-width: var(--dg-s-strong);
-  background: var(--dg-paper);
+  background: var(--dg-tile);
   color: var(--dg-ink);
   font-weight: 600;
 }
@@ -153,16 +198,18 @@
   content: '✓';
 }
 
+/* Outcome overrides actor, doubled rule included — these come after the `data-team` block on
+   purpose, so a Red player who hands a half-suit to Blue gets Blue's single rule. */
 .entry[data-outcome='team0'] {
   border-inline-start-color: var(--dg-blue);
-  border-start-end-radius: var(--dg-r-lg);
-  border-end-end-radius: var(--dg-r-lg);
+  box-shadow: none;
 }
 
 .entry[data-outcome='team1'] {
   border-inline-start-color: var(--dg-red);
-  border-start-end-radius: var(--dg-r-sm);
-  border-end-end-radius: var(--dg-r-sm);
+  box-shadow:
+    inset var(--dg-s-strong) 0 0 0 var(--dg-paper),
+    inset calc(var(--dg-s-strong) + var(--dg-s-hair)) 0 0 0 var(--dg-red);
 }
 
 /* You claimed and handed it to them. A loss you caused, not a neutral event. */
@@ -176,10 +223,14 @@
   content: '✗';
 }
 
+/* The last line in the log, and the only one drawn in ink rather than a team hue: a 2px
+   --dg-ink rule is the strongest mark on this ground that is not amber, and amber is not
+   this file's to spend. */
 .entry[data-kind='game_over'] {
   border-inline-start-width: var(--dg-s-strong);
   border-inline-start-color: var(--dg-ink);
-  background: var(--dg-paper);
+  box-shadow: none;
+  background: var(--dg-tile);
   color: var(--dg-ink);
   font-weight: 700;
 }

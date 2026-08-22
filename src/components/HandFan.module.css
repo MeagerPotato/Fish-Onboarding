@@ -128,17 +128,25 @@
   display: flex;
 }
 
-/* The half-suit under discussion. Weight step on the rule plus a ring — both
-   visible with the colour removed. */
+/*
+ * The half-suit under discussion. This is the reference's own active-row pattern,
+ * which is three simultaneous changes and not a box drawn round the thing:
+ *
+ *   1. the name goes `--dg-muted` → `--dg-ink` — 160 → 238 Rec.709 luma, the
+ *      channel that carries the state once the colour is gone;
+ *   2. its rule thickens 1.5px → 2px — a second non-colour channel;
+ *   3. the rule alone goes amber. One accent mark for the whole group.
+ *
+ * The ring that used to sit round the group is gone. It was a light-palette move:
+ * a 1px accent hairline standing off cream read as a bracket, and standing off
+ * near-black it reads as glow. It also tripled the amber for a single signal,
+ * which matters more here than it did on paper — a highlighted group can contain
+ * highlighted cards, each of which already carries its own amber edge.
+ */
 .group[data-highlighted='true'] .groupName {
   border-block-end-width: var(--dg-s-strong);
   border-block-end-color: var(--dg-accent-line);
-  color: var(--dg-accent-ink);
-}
-
-.group[data-highlighted='true'] {
-  outline: var(--dg-s-hair) solid var(--dg-accent-line);
-  border-radius: var(--dg-r-sm);
+  color: var(--dg-ink);
 }
 
 /* Functional, not decorative: keeps the h2 that fixes the heading outline out of sight. */

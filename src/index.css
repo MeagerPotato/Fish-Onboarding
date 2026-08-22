@@ -2,49 +2,56 @@
  * The design system. Every component styles against these tokens and defines no colours,
  * sizes or durations of its own.
  *
- * The palette, type scale and spacing are ADAPTED from the measurements recorded in
- * docs/PLEURAT_VISUAL_SPEC.md — an analysis of the reference site the project owner chose.
- * Values are adapted, not lifted: none of their stylesheets, scripts or assets are
- * reproduced here, and three of their choices are deliberately not followed. See
- * "Where we deviate" below.
+ * DARK, UNCONDITIONALLY. There is no light branch and no prefers-color-scheme switch.
+ *
+ * The palette is adapted from the dark branch of the reference site recorded in
+ * docs/PLEURAT_VISUAL_SPEC.md. Values are adapted, not lifted: no stylesheet, script or
+ * asset of theirs is reproduced, and four of their choices are deliberately not followed.
+ *
+ * A finding worth keeping, because it explains why this file used to be light-first:
+ * the reference site is LIGHT by default. A first-time visitor sees warm cream. Its dark
+ * theme is opt-in through a nav toggle persisted to localStorage, so anyone who has ever
+ * clicked it sees dark forever and assumes that is the site. Its dark branch is fully
+ * authored, though, which is what this file adopts.
  *
  * Other sources:
  *   docs/DIAGRAM_SYSTEM.md — the 4px rhythm and the rules that bind every diagram
  *   docs/MOTION_STACK.md   — why the animation layer is CSS and not a library
  *   docs/MOBILE_SPEC.md    — zone heights, touch targets, type floor
  *
- * FOUR THINGS THAT DEFINE THE LOOK, all measured rather than invented:
+ * FOUR THINGS THAT DEFINE THE LOOK:
  *
- *   1. Nothing is neutral and nothing is elevated. Every grey is warm. Radius is 0
- *      everywhere. Shadows are absent. Depth is a 1px line and a slightly different fill —
- *      and the RAISED surface is brighter than the page, which is a paper idea rather than
- *      a screen one. In dark mode that raised surface collapses back into the page.
+ *   1. Nothing is neutral and nothing is elevated. Every grey is WARM — R > G > B in every
+ *      single value below. Radius is 0 everywhere. Shadows are absent. Depth is a 1px line
+ *      and a barely-different fill: their surfaces sit under 1.15:1 against the page, which
+ *      is far subtler than a conventional dark UI and is most of why it reads as printed
+ *      rather than as panels.
  *
- *   2. The accent FILL is identical in both themes; only the accent TEXT moves. A fill
- *      carries no contrast obligation, so it has no reason to change. Amber means state,
- *      never decoration, and never more than two elements at once.
+ *   2. The amber is byte-identical in both of their branches. A fill carries no contrast
+ *      obligation, so it has no reason to move. Amber means state, never decoration, and
+ *      never more than two elements at once.
  *
  *   3. Gutter is split from inset. Body text sits at gutter + inset; rules, ticks and marks
- *      sit at the gutter alone, hanging outside the text column. That offset is most of why
- *      the reference reads as typeset rather than as a web page.
+ *      sit at the gutter alone, hanging outside the text column.
  *
  *   4. Hierarchy is size, case and colour — never weight, never a second family, never an
- *      image. Two weights, a step-function line-height, and tracking signed by size.
+ *      image. Two weights, a step-function line-height, tracking signed by size.
  *
- * WHERE WE DEVIATE, and why:
+ * WHERE WE DEVIATE, and why. All four are deliberate:
  *
- *   - Their typeface is 45 KiB of woff2, roughly three times our entire remaining budget,
- *     so we use a system stack. What is lost is the specific letterforms; what is kept is
- *     the scale, the tracking and the two-weight discipline, which is where most of the
- *     character actually lives.
+ *   - Their typeface is 45 KiB of woff2, roughly three times our whole remaining budget, so
+ *     we keep the scale, tracking and two-weight discipline on a system stack.
  *
- *   - Nine of their light-theme text pairings fail WCAG AA (3.02-3.60:1 on tertiary ink,
- *     2.69-3.21:1 on accent text), and their focus ring measures 1.35:1. We take the hue
- *     and darken to the nearest compliant value. Both numbers are recorded on each token.
+ *   - Their hairline is ink at 24% alpha, which measures 2.01:1 against the page and fails
+ *     the 3:1 required of a border that carries meaning. We keep their alpha hairline for
+ *     decoration only and add a compliant solid rule for anything load-bearing.
  *
- *   - Radius 0 costs us a channel: team identity used to be carried by corner radius. It is
- *     now carried by the written marker ("BLUE" / "RED") already in the markup, with colour
- *     as reinforcement. Still greyscale-safe — check that it stays so.
+ *   - Their focus ring and ::selection are lime (#C0EB3A), which their own build leaks in
+ *     from a legacy design system that governs unrelated routes. On an amber and near-black
+ *     page that is an accident rather than a decision, so we focus in amber.
+ *
+ *   - Radius 0 costs a channel: team identity used to ride on corner radius. It now rests on
+ *     the written "Blue" / "Red" marker already in the markup, with colour as reinforcement.
  */
 
 /* ------------------------------------------------------------------ reset --- */
@@ -95,15 +102,12 @@ ul {
 }
 
 ::selection {
-  background: var(--dg-accent-tint);
-  color: var(--dg-ink);
+  /* Amber, not their leaked lime. */
+  background: var(--dg-accent);
+  color: var(--dg-on-accent);
 }
 
 :focus-visible {
-  /*
-   * Square, like everything else. The reference's own focus ring is a leftover lime that
-   * measures 1.35:1 against its page; we keep the shape and use the accent line instead.
-   */
   outline: var(--dg-s-focus) solid var(--dg-accent-line);
   outline-offset: 2px;
   border-radius: 0;
@@ -112,36 +116,46 @@ ul {
 /* --------------------------------------------------------------- tokens --- */
 
 :root {
-  color-scheme: light dark;
+  /* Dark browser chrome, dark form controls, dark scrollbars. Not a media query. */
+  color-scheme: dark;
 
-  /* -- surface and ink. Warm throughout: no neutral grey anywhere. ---------- */
-  --dg-paper: #fffcf0; /* page ground */
-  --dg-paper-2: #fffdf3; /* RAISED — brighter than the page, deliberately */
-  --dg-paper-sunk: #f3edd6; /* recessed fill, the only "below" surface */
-  --dg-ink: #16140e; /* 18.24:1 */
-  --dg-muted: #57534a; /*  7.35:1 — secondary text */
-  --dg-soft: #6b6759; /*  5.02:1 — tertiary. Theirs is #8B8577 at 3.02:1, which fails. */
-  --dg-rule: #8b8577; /*  3.36:1 — borders only, never text */
-  --dg-hair: rgba(22, 20, 14, 0.16);
-  --dg-hair-faint: rgba(22, 20, 14, 0.08);
+  /* -- grounds. Warm near-black; R > G > B throughout. --------------------- */
+  --dg-paper: #13120d; /* the page */
+  --dg-paper-deep: #0d0c09; /* deepest full-bleed layer, beneath everything */
+  --dg-paper-2: #17160e; /* section / card surface   — 1.03:1 vs page */
+  --dg-paper-sunk: #1f1c11; /* recessed surface         — 1.10:1 vs page */
+  --dg-tile: #221f13; /* chip / hover fill        — 1.14:1 vs page */
 
-  /* -- accent. The fill never moves between themes; only the text does. ----- */
-  --dg-accent: #f3b44a; /* fill — identical in dark, by design */
-  --dg-accent-tint: rgba(243, 180, 74, 0.18);
-  --dg-accent-hover: #f9cb80;
-  --dg-accent-line: #b87214; /*  3.72:1 — borders and markers (needs 3:1) */
-  --dg-accent-ink: #8a5207; /*  6.18:1 — accent as text. Theirs is 2.69:1. */
-  --dg-on-accent: #16140e; /* ink on an accent fill */
+  /* -- ink. Contrast measured against --dg-paper. -------------------------- */
+  --dg-ink: #f1eee6; /* 16.20:1 — primary text */
+  --dg-muted: #a4a097; /*  7.20:1 — secondary text */
+  --dg-soft: #928c7e; /*  5.60:1 — tertiary, still AA at our 13px floor */
+
+  /*
+   * Borders. Theirs is a single ink-at-24% hairline measuring 2.01:1, which is fine for a
+   * decorative separator and not fine for a border that means something. Split in two.
+   */
+  --dg-rule: #6e695e; /*  3.40:1 — meaningful borders, clears the 3:1 floor */
+  --dg-hair: rgba(241, 238, 230, 0.24); /* 2.01:1 — decorative only */
+  --dg-hair-faint: rgba(241, 238, 230, 0.12); /* 1.34:1 — decorative only */
+
+  /* -- accent. Amber. Identical in both of their branches, by design. ------- */
+  --dg-accent: #f3b44a; /* 10.20:1 — fill */
+  --dg-accent-tint: rgba(243, 180, 74, 0.16);
+  --dg-accent-hover: #f9cb80; /* 12.40:1 */
+  --dg-accent-line: #dd922f; /*  7.30:1 — borders, markers, focus */
+  --dg-accent-ink: #e9ad5a; /*  9.60:1 — accent as text */
+  --dg-on-accent: #16140e; /* 10.00:1 on an amber fill */
 
   /* -- teams. The written marker is primary; colour reinforces. ------------- */
-  --dg-blue: #1a3f6f; /* 10.34:1 */
-  --dg-red: #a8431a; /*  5.41:1 */
+  --dg-blue: #7fb0ea; /*  8.15:1 */
+  --dg-red: #f0b49a; /* 10.30:1 */
 
-  /* -- suits. Glyph is primary; these reinforce. ---------------------------- */
-  --dg-suit-spades: #16140e;
-  --dg-suit-clubs: #17532f;
-  --dg-suit-diamonds: #1c4e92;
-  --dg-suit-hearts: #a8431a;
+  /* -- suits. Glyph is primary; these reinforce. --------------------------- */
+  --dg-suit-spades: #f1eee6;
+  --dg-suit-clubs: #63c48c;
+  --dg-suit-diamonds: #86b9f2;
+  --dg-suit-hearts: #f0b49a;
 
   /* -- 4px rhythm ---------------------------------------------------------- */
   --dg-u1: 4px;
@@ -178,16 +192,11 @@ ul {
   --dg-label: 0.8125rem; /* 13px — our floor; theirs drops to 10.5px and fails contrast */
   --dg-name: 0.9375rem; /* 15px */
   --dg-lead: 1.0625rem; /* 17px */
-  /*
-   * Display. The reference measures 2.16x body at 375px and 3.43x at 1440px. Ours was
-   * 1.29x, which is the single largest reason the page read as flat. This tracks their
-   * curve within what a 269px annotation zone can hold on a phone.
-   */
+  /* Their display measures 2.16x body at 375px and 3.43x at 1440px. */
   --dg-display: clamp(2.25rem, 1.4rem + 3.6vw, 3.5rem); /* 36px -> 56px */
-  --dg-lh-display: 1.08;
+  --dg-lh-display: 1.04; /* measured on the reference: 60.65px leading on 58.3px type */
   --dg-lh-body: 1.55;
   --dg-lh-prose: 1.7;
-  /* Tracking signed by size: tight for display, open for small uppercase. */
   --dg-track-display: -0.03em;
   --dg-track: 0.12em;
 
@@ -221,6 +230,20 @@ ul {
   }
 }
 
+/*
+ * Wide desktop. Measured on the reference at 1440x900: its content edge sits at x=73 (18
+ * elements share it) and its body type is 19px, against our 52px and 17px. Both are a step
+ * more generous than ours, and both are affordable here — at this width the annotation zone
+ * has over 1000px and is not competing with a phone's teaching budget.
+ */
+@media (width >= 1200px) {
+  :root {
+    --dg-gutter: 48px;
+    --dg-inset: 24px;
+    --dg-lead: 1.1875rem; /* 19px */
+  }
+}
+
 @media (width < 600px) {
   :root {
     /*
@@ -230,37 +253,6 @@ ul {
     --dg-zone-table: 164px;
     --dg-zone-hand: 104px;
     --dg-zone-nav: 56px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --dg-paper: #13120d;
-    /* The raised surface collapses into the page in dark: brighter paper is a light-mode
-       idea, and faking it here produces a grey box rather than a lit one. */
-    --dg-paper-2: #13120d;
-    --dg-paper-sunk: #1f1c11;
-    --dg-ink: #f1eee6; /* 16.92:1 */
-    --dg-muted: #a4a097; /*  7.71:1 */
-    --dg-soft: #928c7e; /*  5.94:1 */
-    --dg-rule: #6e695e; /*  3.40:1 */
-    --dg-hair: rgba(241, 238, 230, 0.24);
-    --dg-hair-faint: rgba(241, 238, 230, 0.12);
-
-    --dg-accent: #f3b44a; /* unchanged, deliberately */
-    --dg-accent-tint: rgba(243, 180, 74, 0.16);
-    --dg-accent-hover: #f9cb80;
-    --dg-accent-line: #dd922f; /*  7.68:1 */
-    --dg-accent-ink: #e9ad5a; /* 10.13:1 */
-    --dg-on-accent: #16140e;
-
-    --dg-blue: #7fb0ea; /*  8.11:1 */
-    --dg-red: #f0b49a; /* 10.36:1 */
-
-    --dg-suit-spades: #f1eee6;
-    --dg-suit-clubs: #63c48c;
-    --dg-suit-diamonds: #86b9f2;
-    --dg-suit-hearts: #f0b49a;
   }
 }
 
@@ -290,6 +282,11 @@ ul {
 }
 
 /* ----------------------------------------------------------------- base --- */
+
+html {
+  /* The deepest layer sits behind everything, including overscroll rubber-banding. */
+  background: var(--dg-paper-deep);
+}
 
 body {
   min-block-size: 100svh;
@@ -334,15 +331,20 @@ body {
 }
 
 /*
- * Print. The dark palette must not follow the page onto paper. Overriding the TOKENS rather
- * than only body colour means every component that says `color: var(--dg-ink)` prints black
- * without needing a print rule of its own.
+ * Print. This matters more now that the screen palette is unconditionally dark: without it
+ * every printed cheat sheet would be near-white ink on white paper, or a page of black ink.
+ * Overriding the TOKENS rather than only body colour means every component that says
+ * `color: var(--dg-ink)` prints black without needing a print rule of its own.
  */
 @media print {
   :root {
+    color-scheme: light;
+
     --dg-paper: #fff;
+    --dg-paper-deep: #fff;
     --dg-paper-2: #fff;
     --dg-paper-sunk: #fff;
+    --dg-tile: #fff;
     --dg-ink: #000;
     --dg-muted: #333;
     --dg-soft: #444;
@@ -365,6 +367,7 @@ body {
     --dg-slow: 0ms;
   }
 
+  html,
   body {
     background: #fff;
     color: #000;

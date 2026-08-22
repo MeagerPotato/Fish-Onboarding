@@ -16,19 +16,42 @@
  * ---------------------------------------------------------------------------
  * This is diagram D2 of docs/DIAGRAM_SYSTEM.md §4.2, not a decorated list.
  *
- * Four independent channels, so every one of them survives greyscale:
- *   team     CORNER RADIUS — Blue 12px, Red 4px, alternating round the ring.
- *            That alternation is the payload: it is what makes "my team, their
- *            team, my team" legible at 320px, and it is why your teammates are
- *            visibly the seats two steps away and can never be asked.
- *   askable  a 1.5px ink halo — "you may ask this one, now".
- *   active   a 3px accent ring, a caret above the token, and an opacity step
- *            down on every other seat.
- *   out      dashed edge + hatched ground + the word "out" + muted ink. Dimming
- *            alone reads as a rendering artefact at arm's length
- *            (docs/MOBILE_SPEC.md §4.4).
- * Team hue rides on the token border only, where the floor is 3:1 — never on
- * text, which would fall under 4.5:1 once the opacity step is applied.
+ * TEAM USED TO RIDE ON CORNER RADIUS — Blue 12px, Red 4px, alternating round the
+ * ring. Radius is now 0 on every token in the system, so that channel is gone and
+ * the rules that set it have been removed rather than left in place resolving to
+ * zero. What replaces it is the written marker: each token prints "BLUE" or "RED"
+ * under its count, generated here from `data-team` and matching the accessible
+ * name the .tsx already builds ("…, Blue team, …"). A WORD is a stronger channel
+ * than a radius ever was — it survives greyscale completely, it survives a 320px
+ * viewport, and it needs no legend.
+ *
+ * Hue reinforces the word and the token's edge, and nothing else. On the dark
+ * ground `--dg-blue` measures 8.30:1 and `--dg-red` 10.45:1 against the page, so
+ * both clear 4.5:1 as text even after the 0.82 dim applied to non-acting seats
+ * (6.29 and 7.71 measured through the composite). Their Rec.709 lumas are 169.8
+ * and 190.9 — near-identical in greyscale, which is precisely why the word is
+ * primary and the hue is not allowed to be.
+ *
+ * Four independent channels, every one of them surviving greyscale:
+ *   team     the printed word BLUE / RED, tinted with the team hue.
+ *   askable  a `--dg-muted` halo standing 4px off the token — "you may ask this
+ *            one, now". Deliberately NOT ink: an ink halo at 16:1 is the
+ *            brightest thing that can appear on this page and would out-shout the
+ *            amber ring on the seat that is actually to act.
+ *   active   a 3px amber ring, a caret above the token, and an opacity step down
+ *            on every other seat.
+ *   out      dashed edge + striped ground + the word "out" + an em-dash for the
+ *            count + muted ink — five of them, because dimming alone reads as a
+ *            rendering artefact at arm's length (docs/MOBILE_SPEC.md §4.4).
+ *
+ * Grounds, and why "raised" is not one of them. The old light palette lifted a
+ * token by making it brighter than the page. That move is dead here — the
+ * reference collapses its raised tier outright in dark. The ladder is instead:
+ *   page          `--dg-paper`      the ring sits on it
+ *   a token       `--dg-paper-2`    an object, 1.03:1 off the page
+ *   your token    `--dg-paper-sunk` plus a 2px edge — weight is the real signal
+ *   a seat that is out  back to `--dg-paper`, plus hatching
+ * Every one of those steps is under 1.15:1. The lines carry the structure.
  *
  * Geometry. Up to 180px of the 200px table zone; the log ticker takes the rest.
  * Six 56px tokens on a ring of 40% × 21%, the learner pinned at 6 o'clock and
@@ -93,6 +116,16 @@
    * 16:10 ellipse, the shape of a real table seen from above.
    */
   max-block-size: 19rem;
+
+  /*
+   * On a tall desktop column the ring was stranding air: 926px of TableView around a 304px
+   * table. The cap lifts with the viewport so the table grows into the space it is given,
+   * while the 16:10-ish proportion is preserved by --rx/--ry — a card table is wider than it
+   * is deep, so this must never become a tall oval.
+   */
+  @media (height >= 60rem) and (width >= 60rem) {
+    max-block-size: 26rem;
+  }
   margin-inline: auto;
 }
 
@@ -107,14 +140,14 @@
 }
 
 /* The table itself: the one decorative ornament in the system. Textless, so it
-   costs nothing in the accessibility tree, and droppable without loss. */
+   costs nothing in the accessibility tree, and droppable without loss — which is
+   why it is the one place `--dg-hair` (2.01:1) is allowed to draw the edge. */
 .seats::before {
   content: '';
   position: absolute;
   inset-block: calc(50% - var(--ry));
   inset-inline: calc(50% - var(--rx));
   border: var(--dg-s-hair) dashed var(--dg-hair);
-  border-radius: var(--dg-r-md);
 }
 
 .seat {
@@ -158,17 +191,14 @@
   --y: calc(var(--ry) * 0.95);
 }
 
-/* Team is the token's silhouette. Hue is reinforcement, and rides the border. */
+/* Team hue. Carried on the token's edge and on the printed marker; never on the
+   name or the count, which stay at full ink so they read at arm's length. */
 .seat[data-team='0'] {
   --team: var(--dg-blue);
-
-  border-radius: var(--dg-r-lg);
 }
 
 .seat[data-team='1'] {
   --team: var(--dg-red);
-
-  border-radius: var(--dg-r-sm);
 }
 
 /* The token itself. The component renders one or the other, never both, and the
@@ -184,12 +214,15 @@
   block-size: 100%;
   padding: calc(var(--dg-u1) / 2);
   border: var(--dg-s-line) solid var(--team);
-  border-radius: inherit;
-  background: var(--dg-paper);
+  border-radius: var(--dg-r-sm);
+  background: var(--dg-paper-2);
   line-height: 1.15;
   text-align: center;
   user-select: none;
   touch-action: manipulation;
+  transition:
+    border-color var(--dg-fast) var(--dg-ease),
+    background-color var(--dg-fast) var(--dg-ease);
 }
 
 .name {
@@ -205,9 +238,13 @@
 }
 
 /*
- * The team marker MOBILE_SPEC §4.4 requires. It is not in the markup, so it is
+ * The team marker MOBILE_SPEC §4.4 requires, and — since radius went to 0 — the
+ * only channel that carries team on its own. It is not in the markup, so it is
  * generated here from `data-team` and it matches the accessible name, which
  * already says "Blue team" / "Red team".
+ *
+ * Uppercase + tracking is the reference's eyebrow gesture; the hue is the same
+ * one on the edge, so word and colour agree instead of competing.
  */
 .seat > *::after {
   content: 'Red';
@@ -216,7 +253,7 @@
   letter-spacing: var(--dg-track);
   line-height: 1;
   text-transform: uppercase;
-  color: var(--dg-muted);
+  color: var(--team);
 }
 
 .seat[data-team='0'] > *::after {
@@ -225,32 +262,54 @@
 
 /* The name already reads "You", and this span is aria-hidden, so showing it too
    would say the same thing twice inside a 56px token. `[data-you]` carries the
-   distinction instead, with a heavier edge and a recessed ground. */
+   distinction instead, with a heavier edge and a ground one step further from
+   the page — weight first, because that is what survives the colour going. */
 .you {
   display: none;
 }
 
 .seat[data-you='true'] > * {
   border-width: var(--dg-s-strong);
-  background: var(--dg-paper-2);
+  background: var(--dg-paper-sunk);
 }
 
-/* A legal target right now. */
+/*
+ * A legal target right now: a halo standing off the token so it reads as a second
+ * concentric edge rather than a thicker first one. `--dg-muted` is 7.19:1 — far
+ * past the 3:1 a meaningful border owes, and deliberately a step below the ink
+ * so the amber ring on the acting seat still wins the page.
+ */
 .seat[data-askable='true'] > * {
-  outline: var(--dg-s-line) solid var(--dg-ink);
+  outline: var(--dg-s-line) solid var(--dg-muted);
   outline-offset: var(--dg-u1);
 }
 
-/* Out of cards: cannot ask, cannot be asked. Four channels, none of them hue. */
+/*
+ * Out of cards: cannot ask, cannot be asked. Five channels, none of them hue —
+ * dashed edge, striped ground, the word "out", an em-dash for the count, and
+ * muted ink.
+ *
+ * The stripe is the reference's two-tone hatching recipe rather than the 1px
+ * hairline hatch this used to draw, and the change is forced by contrast, not
+ * taste. The old version laid `--dg-hair` lines behind the label; that hairline
+ * resolves to 70.8 luma over the page, and 13px muted text crossing one measured
+ * **3.00:1** once the 0.82 dim on non-acting seats was applied. Text has to clear
+ * 4.5:1 against the WORST pixel behind it, not the average.
+ *
+ * Opaque 8px bands of `--dg-tile` and `--dg-paper` instead: the darker band is
+ * page level and the lighter one is the tile tier, so the token's mean brightness
+ * lands on the page rather than above it (receding on near-black means going
+ * darker) while the 1.14:1 step between bands — the largest surface step this
+ * palette has — makes the pattern read as a pattern. Worst pixel behind the
+ * label is now `--dg-tile`: 4.69:1 dimmed, 6.32:1 undimmed.
+ */
 .seat[data-out='true'] > * {
   border-style: dashed;
-  background:
-    repeating-linear-gradient(
-      -45deg,
-      var(--dg-hair) 0 var(--dg-s-hair),
-      transparent var(--dg-s-hair) var(--dg-u1)
-    ),
-    var(--dg-paper-2);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--dg-tile) 0 var(--dg-u2),
+    var(--dg-paper) var(--dg-u2) var(--dg-u4)
+  );
 }
 
 .seat[data-out='true'] .name,
@@ -258,11 +317,14 @@
   color: var(--dg-muted);
 }
 
+/* The marker swaps its word, so it also swaps off the team hue: "out" is not a
+   team, and leaving it tinted would say the seat is still in play. */
 .seat[data-out='true'] > *::after {
   content: 'out';
+  color: var(--dg-muted);
 }
 
-/* The annotation is pointing here. */
+/* The annotation is pointing here. Amber ground + amber edge, one mark. */
 .seat[data-spotlight='true'] > * {
   border-width: var(--dg-s-strong);
   border-color: var(--dg-accent-line);
@@ -272,7 +334,11 @@
 /*
  * The seat to act. Ring + caret + the accessible name's ", to act", and every
  * other seat steps back to .82 — the reference site's dim-to-focus move, held
- * above the level where 13px text would drop under 4.5:1.
+ * far above the level where 13px text would drop under 4.5:1 (the dimmed team
+ * marker measures 6.29:1 in blue and 7.71:1 in red through the composite).
+ *
+ * This is the ONE amber ring on the table. `[data-spotlight]` fills rather than
+ * rings, so the two compose on the same token instead of doubling the accent.
  */
 .seats:has([data-active='true']) .seat:not([data-active='true']) {
   opacity: 0.82;
@@ -293,8 +359,10 @@
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-.seatButton:focus-visible {
-  border-radius: inherit;
+@media (hover: hover) {
+  .seatButton:hover {
+    background: var(--dg-tile);
+  }
 }
 
 .seatButton:active {

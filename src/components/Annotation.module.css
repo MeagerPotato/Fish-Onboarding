@@ -34,7 +34,9 @@
  */
 .eyebrow {
   font-size: var(--dg-label);
-  font-weight: 600;
+  /* 500, matching `.dg-eyebrow`: nothing in the reference is bolder, and a synthesised 600 at
+     13px blooms on near-black until the +0.12em tracking stops reading as tracking. */
+  font-weight: 500;
   letter-spacing: var(--dg-track);
   text-transform: uppercase;
   color: var(--dg-soft);
@@ -49,36 +51,59 @@
   vertical-align: middle;
 }
 
+/*
+ * Display type, 36px at 375 and 56px at 1280 — 2.1x body, and now near-white on near-black.
+ *
+ * Weight stays 500. The reference sets display at 500 and body at 400 and has no third
+ * weight; dropping to 400 to fight the bloom would collapse the only weight step the system
+ * owns, and 400 on a system grotesque at 56px is limp. So the compensation goes into tracking
+ * instead: -0.25 of the tracking unit (-0.03em, the reference's display value) to -0.2
+ * (-0.024em). Two reasons, and both are dark-specific. Light glyphs irradiate outward on a
+ * near-black ground, which visually *eats* the sidebearing before the letterform gets it. And
+ * the system stack — SF Pro, Segoe UI Variable — already applies optical sizing at display
+ * sizes, so it has tightened once before our -0.03em tightens it again. The reference's face
+ * does not, which is why its number is not ours.
+ *
+ * Line-height holds at 1.14 rather than going to the token's 1.08. That is the reference's
+ * *mobile* display leading applied at every size, on purpose: the reference drops to 1.04 on
+ * desktop, and tight leading on dark lets the bloom off two consecutive lines close the
+ * channel between them. On a 22ch measure this headline wraps at both viewports, so the
+ * channel is always in play.
+ */
 .title {
   max-inline-size: 22ch;
   font-size: var(--dg-display);
   font-weight: 500;
-  /* Line-height is a step function: 1.14 display, 1.55 body. There is no 1.3 (§6.4.1). */
-  line-height: 1.14;
-  /* Tracking is signed by size — negative on display, positive on the eyebrow (§6.4.2). */
-  letter-spacing: calc(var(--dg-track) * -0.25);
+  line-height: var(--dg-lh-display);
+  letter-spacing: calc(var(--dg-track) * -0.2);
   text-wrap: balance;
   color: var(--dg-ink);
 }
 
 /*
  * Focus arrives here on every step change, so a tight alarm ring would fire 19 times a
- * session. Instead the global 3px accent ring is pushed clear of the letterforms and the gap
- * is filled with the accent tint, so it frames the new step as a plate. Accent already means
- * "this is the current thing" everywhere else in the system; nothing here is red, thin or
- * jittery. Width and colour are inherited from index.css, so the ring never gets weaker.
+ * session. The ring itself is untouchable — width and colour are inherited from index.css so
+ * it can never get weaker — but on near-black `--dg-accent-line` is 7.3:1 rather than the
+ * 2-and-change it managed on cream, and what was a quiet frame is now the loudest mark on the
+ * page. Loud is fine; detached is not.
+ *
+ * So the offset closes from 8px to 4px and the tint plate spreads by exactly the same 4px.
+ * The plate now runs unbroken from behind the letterforms out to the ring's inner edge, with
+ * no strip of page showing through the gap. That is the whole difference between "a warning
+ * rectangle has appeared around this heading" and "this heading is on a lit plate" — a
+ * floating outline reads as an alarm, an outline that bounds a fill reads as a place.
  */
 .title:focus-visible {
   border-radius: var(--dg-r-lg);
-  outline-offset: var(--dg-u2);
+  outline-offset: var(--dg-u1);
   background: var(--dg-accent-tint);
-  box-shadow: 0 0 0 var(--dg-u2) var(--dg-accent-tint);
+  box-shadow: 0 0 0 var(--dg-u1) var(--dg-accent-tint);
 }
 
 .body {
   max-inline-size: 52ch;
   margin-block-start: var(--dg-u2);
-  line-height: 1.55;
+  line-height: var(--dg-lh-body);
   text-wrap: pretty;
   color: var(--dg-muted);
 }

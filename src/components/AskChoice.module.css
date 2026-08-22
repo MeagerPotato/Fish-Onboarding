@@ -4,12 +4,33 @@
  * Hook: [data-state="idle|wrong|correct"] on each option button.
  *
  * The wrong state is where the teaching happens, so it is drawn as information, not as a
- * verdict: the option keeps its paper fill and stays selectable, its border turns DASHED —
- * this route is closed, the door is not — and the specific reason sits directly beneath it.
+ * verdict: the option keeps its ground, stays selectable, its border turns DASHED and one
+ * step BRIGHTER — this route is closed, the door is not — and the specific reason sits
+ * directly beneath it. Dashed means "provisional", the same thing it means on the claim
+ * sheet's unplaced rows; brighter means "this is the one you touched".
  *
- * State is carried by border STYLE plus a glyph, never by colour: idle is a thin solid
- * hairline, wrong is dashed, correct is a doubled solid edge, and the note below carries
- * ✕ or ✓. All three survive greyscale. MOBILE_SPEC §7.3.6, DIAGRAM_SYSTEM §3.5.
+ * NO STATE HERE IS CARRIED BY HUE. --dg-blue and --dg-red are the TEAM channel and nothing
+ * else — every other module in the app uses them only for Blue/Red, and on a checkpoint step
+ * the score rail and the log are on screen showing exactly that. Borrowing them for
+ * correct/wrong (as this file used to) collides with the one colour meaning the app has, and
+ * on near-black a red-edged option additionally reads as an alarm rather than as a lesson.
+ * State is therefore border STYLE + border BRIGHTNESS + a glyph:
+ *
+ *   idle     1.5px solid  --dg-rule   (3.4:1)
+ *   wrong    1.5px dashed --dg-soft   (5.6:1) + "✕" on the note below
+ *   correct  a double ink rule                + "✓" on the note below
+ *
+ * All three survive greyscale on two independent channels. MOBILE_SPEC §7.3.6,
+ * DIAGRAM_SYSTEM §3.5.
+ *
+ * Amber appears exactly once in this component — the rule across the top. The four options
+ * are peers, so none of them may be the accent; the accent says "the block below is the part
+ * you do". PLEURAT_VISUAL_SPEC §2.3: on near-black the amber is byte-identical to the light
+ * theme, which makes it proportionally far louder, so the two-per-view cap tightens.
+ *
+ * Surfaces are deliberately almost invisible (--dg-paper-sunk is 1.10:1 against the page).
+ * That is the reference's depth model, not an oversight: elevation is a LINE plus a barely
+ * different fill (§4.4). Nothing in this file separates itself with a fill alone.
  */
 
 .choice {
@@ -70,6 +91,11 @@
   gap: var(--dg-u1);
 }
 
+/*
+ * The outline button, per PLEURAT_VISUAL_SPEC §5.1: no fill of its own, a 1px-class rule, and
+ * a hover that moves the fill to --dg-tile and brightens the rule. Their hover layer changes
+ * colour only — there is no lift anywhere in it — so neither is there one here.
+ */
 .optionButton {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -78,10 +104,17 @@
   inline-size: 100%;
   padding: var(--dg-u3);
   text-align: start;
+  color: var(--dg-ink);
   background: var(--dg-paper);
   border: var(--dg-s-line) solid var(--dg-rule);
   border-radius: var(--dg-r-md);
   touch-action: manipulation;
+  /* Their colour/state band. --dg-slow is 0ms when motion is off, so no query is needed. */
+  transition:
+    background var(--dg-slow) var(--dg-ease),
+    border-color var(--dg-slow) var(--dg-ease),
+    color var(--dg-slow) var(--dg-ease),
+    box-shadow var(--dg-slow) var(--dg-ease);
 }
 
 .optionText {
@@ -90,53 +123,85 @@
   line-height: 1.35;
 }
 
-.optionButton[data-state='wrong'] {
-  border-style: dashed;
-  border-color: var(--dg-red);
+@media (hover: hover) {
+  .optionButton:hover:enabled {
+    background: var(--dg-tile);
+    border-color: var(--dg-soft);
+  }
 }
 
-/* Border width never changes, so nothing reflows: the second edge is an inset ring. */
+/* Dashed = provisional, brighter = "you picked this". The reason arrives directly below. */
+.optionButton[data-state='wrong'] {
+  border-style: dashed;
+  border-color: var(--dg-soft);
+}
+
+/*
+ * Correct: a printed DOUBLE RULE, not a thicker one. The second line is an inset ring with a
+ * 1px gap of the button's own fill between it and the border, so the two edges read as two
+ * edges. Border width never changes, so nothing reflows — §5.1, "borders on state change are
+ * always inset box-shadow, never border". The claim sheet's solved block uses the same idiom.
+ */
 .optionButton[data-state='correct'] {
-  border-color: var(--dg-blue);
-  background: var(--dg-paper-2);
-  box-shadow: inset 0 0 0 var(--dg-s-line) var(--dg-blue);
+  background: var(--dg-tile);
+  border-color: var(--dg-ink);
+  box-shadow:
+    inset 0 0 0 var(--dg-s-hair) var(--dg-tile),
+    inset 0 0 0 calc(var(--dg-s-hair) + var(--dg-s-line)) var(--dg-ink);
 }
 
 .optionButton:disabled {
   cursor: default;
 }
 
+/*
+ * Spent options, once the checkpoint is over. This used to be `opacity: .55`, which was a
+ * light-mode move: dimming toward cream paper lightened everything, but dimming toward
+ * near-black darkens it, and it took the border down to roughly 1.9:1 along with the text.
+ * Recede by naming the quieter tokens instead — the frame drops to the decorative hairline
+ * because a spent option's border no longer carries meaning, and the label drops to --dg-soft
+ * (5.6:1, still legible). The correct option keeps its double rule and wins the group outright.
+ */
 .optionButton:disabled:not([data-state='correct']) {
-  opacity: 0.55;
+  color: var(--dg-soft);
+  border-color: var(--dg-hair);
 }
 
+/*
+ * The reason. A recessed note — the reference's dark recessed surface is exactly
+ * --dg-paper-sunk — held by a 2px edge on the start side. The edge is the separation; the
+ * fill is only a whisper, and is not asked to do any work.
+ */
 .why {
   padding: var(--dg-u2) var(--dg-u3);
   font-size: var(--dg-lead);
   line-height: 1.45;
-  background: var(--dg-paper-2);
+  color: var(--dg-ink);
+  background: var(--dg-paper-sunk);
   border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
   border-radius: 0 var(--dg-r-sm) var(--dg-r-sm) 0;
 }
 
+/* The edge echoes the option it belongs to: dashed and soft, or solid and ink. */
 [data-state='wrong'] + .why {
-  border-inline-start-color: var(--dg-red);
+  border-inline-start-style: dashed;
+  border-inline-start-color: var(--dg-soft);
 }
 
 [data-state='wrong'] + .why::before {
   content: '✕ ';
   font-weight: 700;
-  color: var(--dg-red);
+  color: var(--dg-ink);
 }
 
 [data-state='correct'] + .why {
-  border-inline-start-color: var(--dg-blue);
+  border-inline-start-color: var(--dg-ink);
 }
 
 [data-state='correct'] + .why::before {
   content: '✓ ';
   font-weight: 700;
-  color: var(--dg-blue);
+  color: var(--dg-ink);
 }
 
 /* Quiet on purpose. The reason under the option is the message; this is only a nudge. */
@@ -145,22 +210,42 @@
   color: var(--dg-muted);
 }
 
+/*
+ * The escape hatch — the reference's ghost button. It must be findable and must not compete
+ * with the four options, so it rests at --dg-muted and comes up to ink on hover. §5.1.
+ */
 .reveal {
   justify-self: start;
   padding-inline: var(--dg-u4);
   font-size: var(--dg-name);
   font-weight: 600;
+  color: var(--dg-muted);
   background: var(--dg-paper);
   border: var(--dg-s-line) solid var(--dg-rule);
   border-radius: var(--dg-r-pill);
   touch-action: manipulation;
+  transition:
+    background var(--dg-slow) var(--dg-ease),
+    border-color var(--dg-slow) var(--dg-ease),
+    color var(--dg-slow) var(--dg-ease);
 }
 
+@media (hover: hover) {
+  .reveal:hover {
+    color: var(--dg-ink);
+    background: var(--dg-tile);
+    border-color: var(--dg-soft);
+  }
+}
+
+/* Not a control — the answer, once given. A hairline box is decoration, so hair is legal. */
 .reveal_text {
   padding: var(--dg-u3);
   font-size: var(--dg-lead);
   line-height: 1.45;
-  background: var(--dg-paper-2);
+  color: var(--dg-ink);
+  background: var(--dg-paper-sunk);
+  border: var(--dg-s-hair) solid var(--dg-hair);
   border-radius: var(--dg-r-md);
 }
 

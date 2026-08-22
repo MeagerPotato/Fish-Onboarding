@@ -13,7 +13,25 @@
  *
  * The radios are real and stay real. Never `display: none` them: that drops them out of the
  * tab order and kills arrow-key navigation inside the group. The native dot is also the
- * cheapest greyscale-proof "checked" mark there is.
+ * cheapest greyscale-proof "checked" mark there is, which is why its `accent-color` is now
+ * --dg-ink: a near-white disc against a near-black segment is the single loudest non-hue
+ * signal available, and it costs nothing.
+ *
+ * WHERE THE AMBER GOES. On near-black the accent is proportionally far louder than it was on
+ * cream (PLEURAT_VISUAL_SPEC §2.3 — the fill is byte-identical in both themes), so the
+ * two-per-view cap tightens rather than relaxes. This sheet spends it on exactly two things,
+ * and never on more than two at once:
+ *
+ *   1. the rule across the top — "this is the part you do";
+ *   2. the SUBMIT button, which is the reference's primary button verbatim: a solid amber
+ *      fill with near-black text at 10.2:1 (§7.6 #1, their single highest-value colour move).
+ *      When it is blocked the accent is withdrawn from it and passes to `.progress`, which is
+ *      then the thing worth reading. Two, always, never three.
+ *
+ * The six chosen seats used to take --dg-accent-tint and a 2px --dg-accent-line ring each.
+ * Six amber boxes plus the rule plus the button is not an accent, it is a colour scheme, so
+ * "chosen" is now carried in INK: an inset ink ring, a bold ink label, the ink radio dot and
+ * a --dg-tile fill. Four channels, none of them a hue.
  *
  * `claim-submit` carries aria-disabled, never disabled — `.submit:disabled` would match
  * nothing. The blocked state is [data-blocked="true"]: it looks unavailable, keeps its place
@@ -26,7 +44,7 @@
   display: grid;
   gap: var(--dg-u3);
   padding-block: var(--dg-u4);
-  /* One accent, once: the rule that says "this is the part you do". */
+  /* Accent 1 of 2: the rule that says "this is the part you do". */
   border-block-start: var(--dg-s-strong) solid var(--dg-accent-line);
 }
 
@@ -98,11 +116,17 @@
   /* Dashed = this card has nowhere to be yet. State by border style, not by colour. */
   border: var(--dg-s-line) dashed var(--dg-rule);
   border-radius: var(--dg-r-md);
+  transition: border-color var(--dg-slow) var(--dg-ease);
 }
 
+/*
+ * Placed: the frame stops being provisional and brightens a step, 3.4:1 -> 5.6:1. Not to
+ * --dg-ink — six near-white frames at once would out-shout the one ringed segment inside each
+ * of them, and that ring is the answer the learner is actually reading.
+ */
 .row[data-placed='true'] .seats {
   border-style: solid;
-  border-color: var(--dg-ink);
+  border-color: var(--dg-soft);
 }
 
 .seatOption {
@@ -115,6 +139,9 @@
   cursor: pointer;
   touch-action: manipulation;
   user-select: none;
+  transition:
+    background var(--dg-slow) var(--dg-ease),
+    box-shadow var(--dg-slow) var(--dg-ease);
 }
 
 .seatOption + .seatOption {
@@ -124,22 +151,39 @@
 .seatLabel {
   /* Seat names are capped at 7 characters so they hold at 15px in an 81px segment. §4.8. */
   font-size: var(--dg-name);
+  color: var(--dg-muted);
+  transition: color var(--dg-slow) var(--dg-ease);
 }
 
 .radio {
   flex: none;
   margin: 0;
-  accent-color: var(--dg-accent-line);
+  /*
+   * Ink, not amber. Six amber dots is six accents; a near-white disc is louder in greyscale
+   * anyway, and it leaves the accent free for the button that actually wants it.
+   */
+  accent-color: var(--dg-ink);
 }
 
-/* Four channels on the chosen seat: filled dot, bold name, inset ring, tint. */
+@media (hover: hover) {
+  .seatOption:hover:not([data-checked]) {
+    background: var(--dg-paper-sunk);
+  }
+
+  .seatOption:hover:not([data-checked]) .seatLabel {
+    color: var(--dg-ink);
+  }
+}
+
+/* Four channels on the chosen seat: filled dot, bold ink name, inset ink ring, tile fill. */
 .seatOption[data-checked='true'] {
-  background: var(--dg-accent-tint);
-  box-shadow: inset 0 0 0 var(--dg-s-strong) var(--dg-accent-line);
+  background: var(--dg-tile);
+  box-shadow: inset 0 0 0 var(--dg-s-strong) var(--dg-ink);
 }
 
 .seatOption[data-checked='true'] .seatLabel {
   font-weight: 700;
+  color: var(--dg-ink);
 }
 
 /* The ring moves to the label so it is visible at segment size; inset, since .seats clips. */
@@ -159,29 +203,59 @@
   font-weight: 600;
   color: var(--dg-muted);
   font-variant-numeric: tabular-nums;
+  transition: color var(--dg-slow) var(--dg-ease);
 }
 
-/* While the button is blocked, the reason is what the eye should land on. */
+/* While the button is blocked, the reason is what the eye should land on — and the button has
+   given the accent up, so this is accent 2 of 2 and the count never rises to three. */
 .sheet:has([data-blocked]) .progress {
   color: var(--dg-accent-ink);
 }
 
+/*
+ * The primary button, straight out of PLEURAT_VISUAL_SPEC §7.6 #1: solid amber, near-black
+ * label, square, hover moves the fill to --dg-accent-hover and nothing else moves. It used to
+ * be an --dg-ink fill, which on cream was a dark slab and on near-black is a glowing white
+ * one — the loudest object on the page, for a button that is often not even available.
+ */
 .submit {
   min-block-size: calc(var(--dg-node-min) + var(--dg-u3));
   inline-size: 100%;
   padding-inline: var(--dg-u4);
   font-size: var(--dg-name);
   font-weight: 700;
-  color: var(--dg-paper);
-  background: var(--dg-ink);
-  border: var(--dg-s-line) solid var(--dg-ink);
+  color: var(--dg-on-accent);
+  background: var(--dg-accent);
+  border: var(--dg-s-line) solid var(--dg-accent-line);
   border-radius: var(--dg-r-md);
   touch-action: manipulation;
+  transition:
+    background var(--dg-slow) var(--dg-ease),
+    border-color var(--dg-slow) var(--dg-ease),
+    color var(--dg-slow) var(--dg-ease);
 }
 
-/* Blocked palette converged with StepNav's Next: --dg-soft, one step quieter than --dg-muted.
-   The reason line beside it stays at full strength, so the explanation reads and the control
-   does not. */
+@media (hover: hover) {
+  .submit:not([data-blocked]):hover {
+    background: var(--dg-accent-hover);
+  }
+}
+
+/*
+ * The one place the global amber focus ring is wrong: an amber ring 2px off an amber fill is
+ * a ring you have to look for. Only the colour is overridden — width, offset and radius stay
+ * on the global rule. The blocked button is dark, so it keeps the amber ring.
+ */
+.submit:not([data-blocked]):focus-visible {
+  outline-color: var(--dg-ink);
+}
+
+/*
+ * Blocked. Palette converged with StepNav's Next: the accent is withdrawn, the fill inverts
+ * from light-on-dark back to dark-on-dark, and the border goes dashed — so the change reads
+ * on a monochrome screen as a polarity flip, not as a hue. The reason line beside it stays at
+ * full strength: the explanation reads and the control does not.
+ */
 .submit[data-blocked='true'] {
   color: var(--dg-soft);
   background: var(--dg-paper-2);
@@ -190,23 +264,29 @@
   cursor: not-allowed;
 }
 
+/*
+ * A failed claim. Same idiom as a wrong ask option — dashed soft edge plus "✕" — because it
+ * is the same register: information about what happened, not an alarm. --dg-red is the TEAM
+ * channel and is never borrowed here; the score rail is showing Blue and Red two columns away.
+ */
 .error {
   padding: var(--dg-u2) var(--dg-u3);
   font-size: var(--dg-name);
   line-height: 1.45;
-  background: var(--dg-paper-2);
-  border-inline-start: var(--dg-s-strong) solid var(--dg-red);
+  color: var(--dg-ink);
+  background: var(--dg-paper-sunk);
+  border-inline-start: var(--dg-s-strong) dashed var(--dg-soft);
   border-radius: 0 var(--dg-r-sm) var(--dg-r-sm) 0;
 }
 
 .error::before {
   content: '✕ ';
   font-weight: 700;
-  color: var(--dg-red);
+  color: var(--dg-ink);
 }
 
 .hints {
-  background: var(--dg-paper-2);
+  background: var(--dg-paper-sunk);
   border: var(--dg-s-hair) solid var(--dg-rule);
   border-radius: var(--dg-r-md);
 }
@@ -217,6 +297,18 @@
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
+  transition: background var(--dg-slow) var(--dg-ease);
+}
+
+/* Open: a hairline under the summary, as an inset shadow so the disclosure does not reflow. */
+.hints[open] .hintsSummary {
+  box-shadow: inset 0 calc(-1 * var(--dg-s-hair)) 0 var(--dg-hair);
+}
+
+@media (hover: hover) {
+  .hintsSummary:hover {
+    background: var(--dg-tile);
+  }
 }
 
 .deductions {
@@ -235,35 +327,58 @@
   border-inline-start: var(--dg-s-strong) solid var(--dg-rule);
 }
 
+/* The escape hatch — the ghost button, identical to the one on the ask checkpoints. */
 .reveal {
   justify-self: start;
   padding-inline: var(--dg-u4);
   font-size: var(--dg-name);
   font-weight: 600;
+  color: var(--dg-muted);
   background: var(--dg-paper);
   border: var(--dg-s-line) solid var(--dg-rule);
   border-radius: var(--dg-r-pill);
   touch-action: manipulation;
+  transition:
+    background var(--dg-slow) var(--dg-ease),
+    border-color var(--dg-slow) var(--dg-ease),
+    color var(--dg-slow) var(--dg-ease);
 }
 
+@media (hover: hover) {
+  .reveal:hover {
+    color: var(--dg-ink);
+    background: var(--dg-tile);
+    border-color: var(--dg-soft);
+  }
+}
+
+/*
+ * Solved. The same printed DOUBLE RULE the correct ask option gets — one idiom for "this is
+ * right", in ink rather than in a hue, and quiet on purpose: the loud thing at this moment is
+ * Next, which has just unblocked.
+ */
 .solved {
   display: grid;
   gap: var(--dg-u2);
   padding: var(--dg-u3);
-  background: var(--dg-paper);
-  border: var(--dg-s-strong) solid var(--dg-blue);
+  background: var(--dg-paper-sunk);
+  border: var(--dg-s-line) solid var(--dg-ink);
   border-radius: var(--dg-r-md);
+  box-shadow:
+    inset 0 0 0 var(--dg-s-hair) var(--dg-paper-sunk),
+    inset 0 0 0 calc(var(--dg-s-hair) + var(--dg-s-line)) var(--dg-ink);
 }
 
 .revealText {
   font-size: var(--dg-lead);
   font-weight: 600;
   line-height: 1.4;
+  color: var(--dg-ink);
 }
 
 .revealText::before {
   content: '✓ ';
-  color: var(--dg-blue);
+  color: var(--dg-ink);
 }
 
 .srOnly {
@@ -286,5 +401,5 @@
 }
 
 .seatOption:active {
-  background: var(--dg-paper-2);
+  background: var(--dg-paper-sunk);
 }

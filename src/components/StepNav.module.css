@@ -17,9 +17,17 @@
   gap: var(--dg-node-gap);
 }
 
+/*
+ * 15px / weight 500 is the reference's button label exactly (VISUAL_SPEC §3.3). Both buttons
+ * carry the same 1.5px frame at all times — transparent where it is not wanted — so the two
+ * labels share one optical baseline and no state change can ever reflow the row. The frame is
+ * a `border` rather than the reference's `inset 0 0 0 1px` box-shadow for one reason: the
+ * blocked state needs `border-style: dashed`, and box-shadow has no dash.
+ */
 .back,
 .next {
   border-radius: var(--dg-r-md);
+  border: var(--dg-s-line) solid transparent;
   font-size: var(--dg-name);
   font-weight: 500;
   /* Kills the 300ms double-tap-zoom delay (MOBILE_SPEC §6.7). */
@@ -37,49 +45,91 @@
   scale: var(--dg-press);
 }
 
-/* Narrower than Next on purpose: it is the secondary move, and the middle needs the room. */
+/*
+ * The reference's ghost button: no fill, a frame, a quieter label. Narrower than Next on
+ * purpose — it is the secondary move, and the middle needs the room.
+ *
+ * The frame is `--dg-rule` (3.4:1) rather than the reference's near-invisible hairline. On
+ * cream a bare text button still read as a control; on near-black, a label with no boundary
+ * standing beside a solid amber fill reads as a caption. The frame is also the only thing
+ * telling a thumb where the 44px target ends, which makes it meaningful, not decorative —
+ * so it takes `--dg-rule` and not `--dg-hair`.
+ */
 .back {
   padding-inline: var(--dg-u3);
-  /* Transparent, not absent, so Back and Next sit on the same optical baseline. */
-  border: var(--dg-s-line) solid transparent;
+  border-color: var(--dg-rule);
   color: var(--dg-muted);
 }
 
-/* Genuinely disabled: it is the first step, and there is nothing to explain. */
+/*
+ * Genuinely disabled: it is the first step, and there is nothing to explain. Dropping the
+ * frame is the signal — "there is no control here" — because opacity is not available: on a
+ * near-black page, fading toward the ground makes a thing vanish rather than recede, and
+ * 0.45 took the label to 2.0:1 and the frame to 1.4:1. The label instead steps down one
+ * documented rung, to `--dg-soft`, and stays readable at 5.6:1.
+ */
 .back:disabled {
-  opacity: 0.45;
+  border-color: transparent;
+  color: var(--dg-soft);
   cursor: default;
 }
 
+/*
+ * Next is the reference's primary button, which is a solid amber fill with `--dg-on-accent`
+ * ink at 10.2:1 — not the tinted outline this used to be. On cream, an amber tint at 16%
+ * still read as a filled button; over #13120D it resolves to roughly #352E1D, 1.5:1, so the
+ * button lost its body and became an outline. A fill is also the correct reading: this is
+ * the one thing on the page the learner is meant to press.
+ */
 .next {
   order: 1;
   padding-inline: var(--dg-u5);
   min-inline-size: calc(var(--dg-node-min) * 2);
-  border: var(--dg-s-line) solid var(--dg-accent-line);
-  background: var(--dg-accent-tint);
-  color: var(--dg-accent-ink);
+  border-color: var(--dg-accent);
+  background: var(--dg-accent);
+  color: var(--dg-on-accent);
 }
 
 /*
  * Blocked: still focusable, still shows the global focus ring, but the accent is withdrawn —
- * accent means "do this", and right now it is not the thing to do. The state is carried by
- * border *style* as well as colour, so it survives a monochrome screen.
+ * accent means "do this", and right now it is not the thing to do. Withdrawing a *fill*
+ * rather than a tint makes the state far louder than it was: the button goes from a
+ * luma-186 block to a luma-28 one, so it survives greyscale on brightness alone. Border
+ * style (dashed vs solid) and label tone are the second and third channels.
  */
 .next[data-blocked='true'] {
   border-color: var(--dg-rule);
   border-style: dashed;
-  background: var(--dg-paper-2);
+  background: var(--dg-paper-sunk);
   color: var(--dg-soft);
   cursor: not-allowed;
 }
 
+/*
+ * The one place the global amber focus ring is wrong, and the same call ClaimSheet's `.submit`
+ * already makes: an amber ring standing 2px off an amber fill measures 1.39:1 against the
+ * thing it is ringing, so at a glance the ring and the button read as one amber blob. Ink is
+ * 14.2:1 against that fill. Only the COLOUR is overridden — width, offset and radius stay on
+ * the global rule in index.css, so the ring can never get weaker here.
+ *
+ * The blocked Next is a dark box, so it keeps the amber ring; the selector says so. This makes
+ * the app's two primary buttons agree: available primary => ink ring, everything else => amber.
+ */
+.next:not([data-blocked]):focus-visible {
+  outline-color: var(--dg-ink);
+}
+
 @media (hover: hover) {
+  /* Ghost hover, per the reference: the frame strengthens and the label goes to full ink. */
   .back:hover:enabled {
+    border-color: var(--dg-soft);
     color: var(--dg-ink);
   }
 
+  /* Primary hover, per the reference: the fill goes amber -> amber-hover. Ink stays. */
   .next:hover:not([data-blocked]) {
-    border-color: var(--dg-accent-ink);
+    border-color: var(--dg-accent-hover);
+    background: var(--dg-accent-hover);
   }
 }
 
@@ -96,36 +146,48 @@
   gap: var(--dg-u1);
 }
 
-/* nowrap is what gives .progress its floor: a fraction broken over two lines is not a fraction. */
+/*
+ * nowrap is what gives .progress its floor: a fraction broken over two lines is not a fraction.
+ * Weight steps 600 -> 500: nothing in the reference is bolder than 500, and on near-black a
+ * synthesised semibold at 13px blooms until the tracking is doing no work.
+ */
 .progressText {
   font-size: var(--dg-label);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: var(--dg-track);
   white-space: nowrap;
   color: var(--dg-soft);
 }
 
+/*
+ * The empty track used to be `--dg-paper-2`, which is 1.03:1 against the page: on dark that is
+ * not a track, it is nothing, and the bar appeared to float with no known length. At 4px tall
+ * the track IS a line, so it is painted as one — the decorative hairline, which resolves to
+ * roughly #484742 and reads as a drawn rail.
+ */
 .progressTrack {
   position: relative;
   inline-size: 100%;
   block-size: var(--dg-u1);
   border-radius: var(--dg-r-pill);
-  background: var(--dg-paper-2);
+  background: var(--dg-hair);
   overflow: hidden;
 }
 
 /*
- * The width is written inline by the component. Transitioning `inline-size` is a deliberate,
- * argued exception to "never animate width": the fill is out of flow, has no children and no
- * in-flow siblings and is 4px tall, so the only layout it can dirty is its own — once per
- * step, not once per frame. Measured 3.35:1 against its track in light, 6.70:1 in dark.
+ * Neutral, not amber, and that is the one real judgement call in this file. The reference does
+ * fill its progress ruler in amber — but it does not stand a primary amber button 8px away
+ * from it. Over near-black, amber is far louder than it was on cream, and Back / bar / Next /
+ * blocked-reason would have put three amber marks in one 1072px row. Progress is ambient
+ * status, not "do this now"; the numerals above are the information and this only reinforces
+ * them, so the accent goes to Next and the bar takes ink. 3.6:1 against its own track.
  */
 .progressFill {
   position: absolute;
   inset-block: 0;
   inset-inline: 0;
   border-radius: inherit;
-  background: var(--dg-accent-line);
+  background: var(--dg-muted);
   /*
    * scaleX off a --progress ratio, so the fill animates entirely on the compositor. The
    * previous inline-size transition was a defensible exception — 4px tall, out of flow, once
@@ -153,6 +215,11 @@
  * the same answer a screen-reader user gets. `.next` takes order:1 so this lands immediately
  * beside the button it explains without touching the DOM order of button-then-description.
  * It wraps rather than pushing the row past the zone's 64px.
+ *
+ * It keeps the accent as TEXT, and that is deliberate bookkeeping rather than decoration: the
+ * amber Next has just gone dark, so the view's accent budget has a slot free, and the reason
+ * is exactly where the withdrawn accent should reappear. Amber never lands on both at once.
+ * 9.6:1 at 13px, well clear of the 4.5 floor the visible reason has to hold.
  */
 .blockedReason {
   flex: 0 1 auto;

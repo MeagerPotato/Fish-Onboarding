@@ -69,6 +69,7 @@
   touch-action: manipulation;
   transition:
     background var(--dg-fast) var(--dg-ease),
+    border-color var(--dg-fast) var(--dg-ease),
     color var(--dg-fast) var(--dg-ease),
     scale var(--dg-fast) var(--dg-ease);
 }
@@ -95,9 +96,22 @@
   color: var(--dg-muted);
 }
 
+/*
+ * Hover had been a step from `--dg-paper` to `--dg-paper-2`. That was a paper move: on cream
+ * the two grounds were a visible eighth of a step apart. Here they measure 1.03:1 — the
+ * feedback is gone, and reaching for a brighter fill instead would light an amber-tinted bar
+ * up like a panel, which is precisely what the dark branch drops.
+ *
+ * So the outline does the work, the way the reference's own outline button does: the edge and
+ * the label both step up to `--dg-accent-hover` (12.4:1), and the fill moves the one notch the
+ * system actually has, page to `--dg-tile`. Three small changes read as one clear one, and no
+ * new amber area is added to a view that already has this bar's tint.
+ */
 @media (hover: hover) {
   .restart:hover {
-    background: var(--dg-paper-2);
+    border-color: var(--dg-accent-hover);
+    background: var(--dg-tile);
+    color: var(--dg-accent-hover);
   }
 
   .dismiss:hover {

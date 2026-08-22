@@ -140,15 +140,28 @@
  * zone's clip edge and Mia's, Dana's and Kofi's names were cut in half on 13 of the 19 steps.
  * The same thing happened at 320–414px from the first two-entry step onward.
  *
- * `auto` on the ring resolves to the `min-block-size` TableView gives it, so the ring's floor
- * is now stated by the component that knows the geometry, and `minmax(0, 1fr)` lets the log —
- * which is a scroll container and loses nothing by being shorter — absorb every remaining
- * pixel. Both tracks are still constant between steps, which is what QA_DESKTOP criterion 5
+ * `min-content` on the ring resolves to the `min-block-size` TableView gives it, so the ring's
+ * floor is still stated by the component that knows the geometry, and the log — a scroll
+ * container that loses nothing by being shorter — absorbs the remainder whenever the zone is
+ * tight. Both tracks are still constant between steps, which is what QA_DESKTOP criterion 5
  * actually protects.
+ *
+ * THE SECOND HALF OF THE SPLIT, and the fix for the void reported on a tall desktop window.
+ * Handing the log `minmax(0, 1fr)` made it the sink for every spare pixel: at 1280x1200 the
+ * zone measures 852px, the ring stayed pinned at its 180px floor and the log took 672px to
+ * hold 392px of content — a ~600px hole down the middle of the left column, because the log
+ * caps its own entry list and simply cannot fill what it is given.
+ *
+ * So the roles swap once there is slack. The log is sized to its CONTENT — `minmax(0, auto)`,
+ * shrinkable to nothing when the zone is short, never taller than it has something to say —
+ * and the RING takes the leftover. It cannot become a tall oval doing so: TableView caps
+ * `.seats` at 19rem and centres it, so past 304px the surplus turns into air above and below
+ * a correctly-proportioned table (measured 78px each side at 1280x1200) instead of a void.
+ * A card table is wider than it is deep, and this is what keeps it that way at any height.
  */
 .table {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(min-content, 1fr) minmax(0, auto);
 }
 
 /* The only zone that flexes, and the only one that scrolls (§4.2, §6.7). */
@@ -174,6 +187,20 @@
   overscroll-behavior: contain;
   padding-block: calc(var(--dg-u5) + var(--safe-t)) calc(var(--dg-u6) + var(--safe-b));
   background: var(--dg-paper);
+}
+
+/*
+ * The overlay is opaque page-colour and it stops flush against the nav, so with a dark ground
+ * there is nothing at all marking where the sheet ends and the way out begins — the reference
+ * card just runs into "Back / Start again". On cream that seam was carried by the fill being
+ * the brightest thing on screen; that idea is gone. A rule replaces it, and only while an
+ * overlay is up, so the ordinary steps keep their unbroken column.
+ *
+ * `--dg-rule`, not the hair: on the final step this line is the affordance that says the nav
+ * is still live under the sheet.
+ */
+.shell:has(> .overlay) .nav {
+  border-block-start: var(--dg-s-hair) solid var(--dg-rule);
 }
 
 /* --bp-sm: 360px */
@@ -223,10 +250,16 @@
     grid-area: 2 / 1;
   }
 
-  /* Separated by a rule, not by a box. */
+  /*
+   * Separated by a rule, not by a box — and on a near-black page the rule is the ONLY thing
+   * doing it. On cream the two columns also differed by the paper grain either side of them;
+   * here both grounds are the same near-black, so this line is the whole division between the
+   * stage and the teaching and is load-bearing by definition. `--dg-hair` is 2.01:1 and
+   * decoration only; a structural column rule takes `--dg-rule` at 3.43:1.
+   */
   .annotation {
     grid-area: 1 / 2 / 3 / 3;
-    border-inline-start: var(--dg-s-hair) solid var(--dg-hair);
+    border-inline-start: var(--dg-s-hair) solid var(--dg-rule);
   }
 }
 
@@ -260,12 +293,17 @@
     scrollbar-gutter: auto;
   }
 
+  /*
+   * Pinned over content that slides underneath it. The fill alone cannot say where the nav
+   * begins — it is the page colour, and on a dark ground no fill difference would help — so
+   * the edge carries it and has to be a real border: `--dg-rule`, not the decorative hair.
+   */
   .nav {
     position: sticky;
     inset-block-end: 0;
     z-index: 1;
     background: var(--dg-paper);
-    border-block-start: var(--dg-s-hair) solid var(--dg-hair);
+    border-block-start: var(--dg-s-hair) solid var(--dg-rule);
   }
 
   .overlay {
@@ -299,6 +337,23 @@
     padding: 0;
     background: none;
     animation: none;
+  }
+
+  /*
+   * When the reference card is up, the card IS the document. Measured at the real print
+   * width (190mm = 718px, the A4 content box at the 10mm @page margin above): the sheet is
+   * 1045px against 1047px of page, so it fits — but only if it starts at the top. Step 19's
+   * annotation is a 275px display-type block, and leaving it in the print flow pushed the
+   * total to 1321px and broke the card across two pages, with the half-suit grid landing on
+   * the seam.
+   *
+   * Scoped to `:has(> .overlay)` rather than hiding `.annotation` outright, because on the
+   * other eighteen steps the annotation is the only thing left in the print flow — the four
+   * zones above are already `display: none` — and hiding it unconditionally would make every
+   * step but the last print a blank sheet.
+   */
+  .shell:has(> .overlay) .annotation {
+    display: none;
   }
 }
 
@@ -364,17 +419,37 @@
   .shell[data-mode='claim'] [data-testid='claim-submit'] {
     position: sticky;
     z-index: 1;
-    background: var(--dg-paper);
   }
 
+  /*
+   * Only the PROGRESS LINE needs a ground of its own: it is bare text, so without one the
+   * rows would read straight through it.
+   *
+   * The submit deliberately does NOT get one. This selector is three levels more specific
+   * than `.submit` in ClaimSheet.module.css, so a `background` here beats the button's own
+   * fill — and once that fill became the amber primary, a paper background painted
+   * `--dg-on-accent` (#16140E) text on `--dg-paper` (#13120D): 1.02:1, the button vanished
+   * below 960px. It does not need the help either: both of its states are already opaque
+   * (`--dg-accent` when available, `--dg-paper-2` when blocked), and it spans the full
+   * inline size, so it occludes the rows scrolling under it on its own.
+   */
   .shell[data-mode='claim'] [data-testid='claim-progress'] {
     inset-block-end: calc(var(--dg-node-min) + var(--dg-u3));
     padding-block: var(--dg-u1);
+    background: var(--dg-paper);
   }
 
+  /*
+   * A line above it so rows visibly pass underneath rather than colliding. It is drawn as a
+   * zero-blur shadow because a real border would reflow the button inside a sticky box — this
+   * is a rule wearing a shadow's syntax, not elevation, and there is no blurred shadow
+   * anywhere in this file to soften on a near-black page.
+   *
+   * It marks the boundary of a sticky control the learner's rows scroll under, so it takes
+   * `--dg-rule` (3.43:1) rather than the decorative hair, which at 2.01:1 read as a smudge.
+   */
   .shell[data-mode='claim'] [data-testid='claim-submit'] {
     inset-block-end: 0;
-    /* A hairline above it so rows visibly pass underneath rather than colliding. */
-    box-shadow: 0 -1px 0 var(--dg-hair);
+    box-shadow: 0 calc(-1 * var(--dg-s-hair)) 0 var(--dg-rule);
   }
 }
